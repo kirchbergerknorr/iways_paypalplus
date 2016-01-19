@@ -1,0 +1,122 @@
+<?php
+/**
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com and you will be sent a copy immediately.
+ *
+ * Created on 02.03.2015
+ * Author Robert Hillebrand - hillebrand@i-ways.de - i-ways sales solutions GmbH
+ * Copyright i-ways sales solutions GmbH © 2015. All Rights Reserved.
+ * License http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ *
+ */
+$paymentExperience = $this->getPaymentEperience();
+if ($paymentExperience) :
+    ?>
+    <div id="ppplus"></div>
+    <script type="text/javascript">
+        if(typeof payment == 'undefined') {
+            var payment = {};
+        }
+        function selectMethod(code) {
+            document.getElementById('p_method_' + code).click();
+        }
+        window.externMethodEnabled = false;
+        window.startPPP = function () {
+            if(typeof window.thirdPartyObject == 'undefined') {
+                window.thirdPartyObject = {<?php echo $this->getThirdPartyJsonObject(); ?>};
+                window.thirdPartyMethodObject = {<?php echo $this->getThirdPartyMethodJsonObject(); ?>};
+            }
+            document.cookie = 'paypalplus_session=; Path=/checkout/onepage; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'paypalplus_session=; Path=/checkout; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'paypalplus_session=; Path=/firecheckout; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'paypalplus_session=; Path=/onestepcheckout; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+
+            selectMethod('iways_paypalplus_payment');
+            window.ppp = PAYPAL.apps.PPP(
+                {
+                    approvalUrl: "<?php echo $paymentExperience; ?>",
+                    placeholder: "ppplus",
+                    mode: "<?php echo Mage::getStoreConfig('iways_paypalplus/api/mode'); ?>",
+                    useraction:"commit",
+                    buttonLocation:"outside",
+                    country:"<?php echo $this->getCountryId(); ?>",
+                    language:"<?php echo $this->getLanguage(); ?>",
+                    onContinue: function () {
+                        payment.save()
+                    },
+                    onThirdPartyPaymentMethodSelected:function (data) {
+                        this.lastCall = 'onThirdPartyPaymentMethodSelected';
+                        selectMethod(window.thirdPartyObject[data.thirdPartyPaymentMethod]);
+                    },
+                    enableContinue: function (data) {
+                        if(this.lastCall != 'onThirdPartyPaymentMethodSelected') {
+                            selectMethod('iways_paypalplus_payment');
+                        }
+                        this.lastCall = 'enableContinue';
+                        try {
+                            if($$('#payment-buttons-container > button').length > 0) {
+                                $$('#payment-buttons-container > button')[0].enable();
+                            }
+                            if($('onestepcheckout-place-order') != null) {
+                                $('onestepcheckout-place-order').enable();
+                            }
+                            if($$('#review-buttons-container > button').length > 0) {
+                                $$('#review-buttons-container > button')[0].enable();
+                            }
+                            if($('onestepcheckout-button-place-order') != null) {
+                                $('onestepcheckout-button-place-order').enable();
+                            }
+                        }catch (e) {
+                            console.log(e);
+                        }
+                    },
+                    disableContinue: function (data) {
+                        if(!window.externMethodEnabled) {
+                            try {
+                                if($$('#payment-buttons-container > button').length > 0) {
+                                    $$('#payment-buttons-container > button')[0].disable();
+                                }
+                                if($('onestepcheckout-place-order') != null) {
+                                    $('onestepcheckout-place-order').disable();
+                                }
+                                if($$('#review-buttons-container > button').length > 0) {
+                                    $$('#review-buttons-container > button')[0].disable();
+                                }
+                                if($('onestepcheckout-button-place-order') != null) {
+                                    $('onestepcheckout-button-place-order').disable();
+                                }
+                            }catch (e) {
+                                console.log(e);
+                            }
+                        }
+                    },
+                    <?php echo $this->getThirdPartyMethods(); ?>
+                });
+        }
+        window.startPPP();
+        function checkStep() {
+            try {
+                if(typeof window.checkout != 'undefined' && typeof window.lastStep == 'undefined') {
+                    window.lastStep = window.checkout.accordion.currentSection;
+                }
+                if (typeof window.lastStep != 'undefined' && window.lastStep != window.checkout.accordion.currentSection) {
+                    window.lastStep = checkout.accordion.currentSection;
+                    if (checkout.accordion.currentSection == "opc-payment") {
+                        window.startPPP();
+                    }
+                }
+            } catch(e) {
+            }
+        }
+        window.setInterval(checkStep, 1000);
+
+    </script>
+<?php endif; ?>

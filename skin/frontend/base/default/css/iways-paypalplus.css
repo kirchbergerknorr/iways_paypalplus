@@ -1,0 +1,65 @@
+#checkout-payment-method-load dt.ppp {
+    background-color: #fff;
+    margin: 0;
+    padding:0;
+    border-top: 1px solid #dfdfdf;
+    overflow: hidden;
+}
+
+#checkout-payment-method-load dt.ppp label {
+    padding: 0px;
+    background: transparent;
+    width: 100%;
+    display: inline-block;
+    cursor: pointer;
+    padding: 20px 10px !important;
+    font-family: Arial !important;
+    font-size: 12px !important;
+    font-weight: normal !important;
+}
+
+#checkout-payment-method-load dt.ppp.ppp-selected {
+    background-image: url("../images/iways/checkmark.png");
+    background-repeat: no-repeat;
+    background-position: right 15px;
+    background-color: #f9f9f9;
+}
+#checkout-payment-method-load dt.ppp.ppp-selected label{font-weight: bold;padding-bottom:10px;}
+
+#checkout-payment-method-load dd.ppp.ppp-selected {
+    background-color: #f9f9f9;
+    padding:0 0 10px;
+}
+
+#checkout-payment-method-load dt.ppp:hover {
+    background-color: #f9f9f9;
+}
+
+#checkout-payment-method-load dt.ppp input {
+    display: none;
+}
+
+#checkout-payment-method-load dt.ppp label:hover {
+    background: transparent;
+}
+
+#checkout-payment-method-load dd.ppp {
+    padding:0;
+}
+#checkout-payment-method-load dd.ppp:last-child {
+    border-bottom: 1px solid #dfdfdf;
+}
+
+#checkout-payment-method-load dt.ppp.iways_paypalplus_payment {
+    border-top: none;
+}
+
+#checkout-payment-method-load dd.ppp.iways_paypalplus_payment {
+    border-bottom: none;
+}
+
+#checkout-payment-method-load dd.ppp.iways_paypalplus_payment.ppp-selected {
+    background: transparent;
+}
+
+#checkout-payment-method-load .form-list .ppp li{margin-bottom:0px;padding-bottom: 8px;}

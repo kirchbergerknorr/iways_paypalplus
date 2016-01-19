@@ -1,0 +1,120 @@
+<?php
+$paymentExperience = Mage::helper('iways_paypalplus')->getPaymentExperience();
+$_methods = $this->getMethods();
+$thirdPartyMethods = Mage::getStoreConfig('payment/iways_paypalplus_payment/third_party_moduls');
+$thirdPartyPayPalMethods = array();
+if (!empty($thirdPartyMethods)) {
+    $thirdPartyMethods = explode(',', $thirdPartyMethods);
+} else {
+    $thirdPartyMethods = array();
+}
+$thirdPartyMethods = array_merge($thirdPartyMethods, array('paypaluk_direct', 'paypaluk_express', 'paypal_standard', 'paypal_direct', 'paypal_express_bml', 'paypal_express'));
+foreach ($thirdPartyMethods as $thirdPartyMethod) {
+    $thirdPartyPayPalMethods[$thirdPartyMethod] = true;
+}
+$pppActive = false;
+if ($paymentExperience) {
+    foreach ($_methods as $_method) {
+        if ($_method->getCode() == 'iways_paypalplus_payment') $pppActive = true;
+    }
+}
+$hideStyle = ' style="display:none;"';
+
+?>
+
+<dl id="checkout-payment-method-load" class="sp-methods">
+    <?php $i = 0; ?>
+    <?php foreach ($_methods as $_method): $_code = $_method->getCode() ?>
+        <?php $i++;
+        if(isset($thirdPartyPayPalMethods[$_code]) && $pppActive) {
+            $hide = true;
+        }else {
+            $hide = false;
+        }?>
+        <?php if ($i != count($_methods)): ?>
+            <style type="text/css">
+                #advice-validate-one-required-by-name-p_method_<?php echo $_code ?> {
+                    display: none !important;
+                }
+            </style>
+        <?php endif; ?>
+        <dt class="ppp <?php echo $_code?>"<?php if($hide || $_code == 'iways_paypalplus_payment') echo $hideStyle; ?>>
+            <?php if (sizeof($_methods) > 1): ?>
+                <input id="p_method_<?php echo $_code ?>" value="<?php echo $_code ?>" type="radio"
+                       name="payment[method]" title="<?php echo $this->htmlEscape($_method->getTitle()) ?>"
+                        <?php if ($this->getSelectedMethodCode() == $_code): ?> checked="checked"<?php endif; ?>
+                       class="radio validate-one-required-by-name"/>
+            <?php else: ?>
+                <span class="no-display"><input id="p_method_<?php echo $_code ?>" value="<?php echo $_code ?>"
+                                                type="radio" name="payment[method]" checked="checked"
+                                                class="radio validate-one-required-by-name"/></span>
+            <?php endif; ?>
+            <label
+                for="p_method_<?php echo $_code ?>"><?php echo $this->getMethodTitle($_method) ?><?php echo $this->getMethodLabelAfterHtml($_method) ?></label>
+        </dt>
+        <?php if ($html = $this->getPaymentMethodFormHtml($_method)): ?>
+            <dd id="container_payment_method_<?php echo $_code; ?>" class="payment-method ppp <?php echo $_code?>"<?php if($hide) echo $hideStyle; ?>>
+                <?php echo $html; ?>
+            </dd>
+        <?php endif; ?>
+    <?php endforeach; ?>
+</dl>
+<div class="tool-tip" id="payment-tool-tip" style="display:none;">
+    <div class="btn-close"><a href="#" id="payment-tool-tip-close"
+                              title="<?php echo $this->__('Close') ?>"><?php echo $this->__('Close') ?></a></div>
+    <div class="tool-tip-content"><img src="<?php echo $this->getSkinUrl('images/cvv.gif') ?>"
+                                       alt="<?php echo $this->__('Card Verification Number Visual Reference') ?>"
+                                       title="<?php echo $this->__('Card Verification Number Visual Reference') ?>"/>
+    </div>
+</div>
+<script type="text/javascript">
+    //<![CDATA[
+    $$('#checkout-payment-method-load dt input').invoke('observe', 'click', function (e) {
+        var element = e.element();
+        var name = 'payment_form_' + element.value;
+        payment.currentMethod = element.value;
+
+        /* Hide all other forms */
+        $$('dd.payment-method').each(function(element){if(element.hasClassName('iways_paypalplus_payment') == false){element.hide();}});
+        try{
+            $$('.ppp').each(function(element){element.removeClassName('ppp-selected')});
+            $$('.ppp.'+element.value).each(function(element){element.addClassName('ppp-selected')});
+        }catch(e) {
+            console.log(e);
+        }
+        if (element.checked && typeof window.thirdPartyMethodObject[element.value] == 'undefined' && element.value != 'iways_paypalplus_payment' ) {
+            window.ppp.deselectPaymentMethod();
+            var form = $(name);
+            var container = $('container_payment_method_' + element.value);
+
+            if (element !== null && container !== null) {
+                container.show();
+                try{
+                    $(name).show();
+                }catch (e) {
+                    //Form not available
+                }
+            }
+        }
+    });
+    //]]>
+</script>
+<script type="text/javascript">
+    //<![CDATA[
+    function toggleToolTip(event) {
+        if ($('payment-tool-tip')) {
+            $('payment-tool-tip').setStyle({
+                top: (Event.pointerY(event) - 560) + 'px'//,
+                //left: (Event.pointerX(event)+100)+'px'
+            })
+            $('payment-tool-tip').toggle();
+        }
+        Event.stop(event);
+    }
+    if ($('payment-tool-tip-close')) {
+        Event.observe($('payment-tool-tip-close'), 'click', toggleToolTip);
+    }
+
+    initWhatIsCvvListeners();
+    //]]>
+</script>

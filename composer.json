@@ -1,0 +1,12 @@
+{
+    "name": "kirchbergerknorr/iways_paypalplus",
+    "description": "Integrates PayPal Plus into Magento",
+    "type": "magento-module",
+    "authors": [
+        {
+            "name": "Leo Friedrichs",
+            "email": "lf@kirchbergerknorr.de"
+        }
+    ],
+    "require": {}
+}

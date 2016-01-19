@@ -1,0 +1,77 @@
+==== 1.4.5 ====
+Added information block to checkout/success
+
+==== 1.4.4 ====
+Fixed wrong locale code in presentation error
+
+==== 1.4.3 ====
+Fixed empty order status Magento 1.7
+Fixed suspected froud for Magento 1.7
+Added localisation
+
+==== 1.4.2 ====
+Force webhooks url to be https even if not
+Fixed tax calculation with discount
+
+==== 1.4.1 ====
+Fixed none responding payment method select
+Removed unnecessary code line
+
+==== 1.4.0 ====
+Added support for TM_Firecheckout and Magestore_Onestepcheckout
+Added form key validateion for Magento 1.9
+
+==== 1.3.3 ====
+Fixed not shown payment method information for Idev_OneStepCheckout
+
+==== 1.3.2 ====
+Fixed agreements validate url and webhooks endpoint url (use force secure)
+
+==== 1.3.1 ====
+Fixed observer config
+
+==== 1.3.0 ====
+Added webhooks support:
+- PAYMENT.SALE.REFUNDED
+- PAYMENT.SALE.PENDING
+- PAYMENT.SALE.COMPLETED
+- RISK.DISPUTE.CREATED
+Improved compatibility with Idev_OneStepCheckout
+Updated PayPal REST SDK to 1.5.0
+Hide all PayPal payment methods if PayPalPlus is active and rendered
+
+==== 1.2.3 ====
+Changed help link to retrieve your api credentials
+Fixed agreement validation
+
+==== 1.2.2 ====
+Added credential validation on payment configuration save
+
+==== 1.2.1 ====
+Added validation for billing agreements
+Fixed single payment method view for Idev_OneStepCheckout
+
+==== 1.2.0 ====
+Added better third party payment support and design
+Fixed tax calculation errors
+Fixed payment method rendering for Idev_OneStepCheckout
+
+==== 1.1.3 ====
+Fixed directory path constant
+
+==== 1.1.2 ====
+Added language information
+
+==== 1.1.1 ====
+Fixed Javascript for payment select
+
+==== 1.1.0 ====
+Added Idev_OneStepCheckout compatibility
+Added Billsafe compatibility
+Updated PayPal REST SDK to 1.3.0
+Changed PayPalPlus Javascript library to online version
+Fixed disappearing payment methods
+
+==== 1.0.0 ====
+PayPal PLUS is a solution where PayPal offers PayPal, Credit Card and ELV (pay upon invoice will be added in a later phase) as individual payment options on the payment selection page.
+Based on the payment method selected by the buyer, he will at a later stage be presented with either the PayPal Login page or an input mask for bank / credit card details.

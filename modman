@@ -1,0 +1,7 @@
+app/code/community/Iways/PayPalPlus/* app/code/community/Iways/PayPalPlus
+app/design/frontend/base/default/layout/iways_paypalplus.xml app/design/frontend/base/default/layout/iways_paypalplus.xml
+app/design/frontend/base/default/template/paypalplus/* app/design/frontend/base/default/template/paypalplus
+app/etc/modules/Iways_PayPalPlus.xml app/etc/modules/Iways_PayPalPlus.xml
+lib/PayPal/* lib/PayPal
+skin/frontend/base/default/css/iways-paypalplus.css skin/frontend/base/default/css/iways-paypalplus.css
+skin/frontend/base/default/images/iways/* skin/frontend/base/default/images/iways

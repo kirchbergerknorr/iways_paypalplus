@@ -1,0 +1,198 @@
+<?xml version="1.0"?>
+<config>
+    <sections>
+        <payment>
+            <groups>
+                <iways_paypalplus_solution translate="label comment" module="iways_paypalplus">
+                    <label>PayPalPlus Settings</label>
+                    <sort_order>10</sort_order>
+                    <expanded>1</expanded>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <frontend_class>complex</frontend_class>
+                    <frontend_model>paypal/adminhtml_system_config_fieldset_group</frontend_model>
+                    <comment></comment>
+                    <paypal_title>Select a Payment Solution</paypal_title>
+                    <fields/>
+                </iways_paypalplus_solution>
+                <paypal_payments>
+                    <iways_paypalplus_payment type="group" translate="label" module="iways_paypalplus">
+                        <label>PayPalPlus Payment Settings</label>
+                        <show_in_default>1</show_in_default>
+                        <show_in_website>1</show_in_website>
+                        <show_in_store>1</show_in_store>
+                        <sort_order>6</sort_order>
+                        <group>iways_paypalplus_solution</group>
+                        <include>0</include>
+                        <frontend_model>iways_paypalplus/adminhtml_system_config_fieldset_payment</frontend_model>
+                        <activity_path>payment/iways_paypalplus_payment/active</activity_path>
+                        <backend_config>
+                            <DE>
+                                <include>1</include>
+                            </DE>
+                        </backend_config>
+                        <fields>
+                            <api type="group" translate="label">
+                                <label>PayPalPlus Api Settings</label>
+                                <sort_order>10</sort_order>
+                                <show_in_default>1</show_in_default>
+                                <show_in_website>1</show_in_website>
+                                <frontend_type>text</frontend_type>
+                                <frontend_model>paypal/adminhtml_system_config_fieldset_expanded</frontend_model>
+                                <fields>
+                                    <client_id translate="label">
+                                        <label>Client ID</label>
+                                        <frontend_type>obscure</frontend_type>
+                                        <backend_model>adminhtml/system_config_backend_encrypted</backend_model>
+                                        <config_path>iways_paypalplus/api/client_id</config_path>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <sort_order>20</sort_order>
+                                    </client_id>
+                                    <client_secret translate="label comment">
+                                        <label>Client Secret</label>
+                                        <frontend_type>obscure</frontend_type>
+                                        <backend_model>adminhtml/system_config_backend_encrypted</backend_model>
+                                        <config_path>iways_paypalplus/api/client_secret</config_path>
+                                        <comment>
+                                            <![CDATA[<a href="https://www.paypalobjects.com/webstatic/de_DE/downloads/PayPal_Nutzung_der_REST_API.pdf" target="_blank">How to retrieve your PayPal API credentials.</a>]]></comment>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <sort_order>30</sort_order>
+                                    </client_secret>
+                                    <mode translate="label" module="iways_paypalplus">
+                                        <label>Mode</label>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <sort_order>40</sort_order>
+                                        <frontend_type>select</frontend_type>
+                                        <config_path>iways_paypalplus/api/mode</config_path>
+                                        <source_model>iways_paypalplus/system_config_source_mode</source_model>
+                                    </mode>
+                                    <paypalplus_hdrimg translate="label tooltip" module="iways_paypalplus">
+                                        <label>Header Image URL</label>
+                                        <config_path>iways_paypalplus/api/hdrimg</config_path>
+                                        <tooltip>
+                                            <![CDATA[The image at the top left of the checkout page. Max size is 750x90-pixel. <strong style="color:red">https</strong> is highly encouraged.]]></tooltip>
+                                        <sort_order>50</sort_order>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <show_in_store>1</show_in_store>
+                                        <shared>1</shared>
+                                    </paypalplus_hdrimg>
+                                </fields>
+                            </api>
+                            <payment type="group">
+                                <label>PayPalPlus Payment Settings</label>
+                                <sort_order>20</sort_order>
+                                <show_in_default>1</show_in_default>
+                                <show_in_website>1</show_in_website>
+                                <frontend_type>text</frontend_type>
+                                <frontend_model>paypal/adminhtml_system_config_fieldset_expanded</frontend_model>
+                                <fields>
+                                    <active translate="label">
+                                        <label>Enabled</label>
+                                        <frontend_type>select</frontend_type>
+                                        <config_path>payment/iways_paypalplus_payment/active</config_path>
+                                        <source_model>adminhtml/system_config_source_yesno</source_model>
+                                        <sort_order>10</sort_order>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <show_in_store>1</show_in_store>
+                                    </active>
+                                    <allowspecific translate="label">
+                                        <label>Payment from Applicable Countries</label>
+                                        <frontend_type>allowspecific</frontend_type>
+                                        <config_path>payment/iways_paypalplus_payment/allowspecific</config_path>
+                                        <sort_order>20</sort_order>
+                                        <source_model>adminhtml/system_config_source_payment_allspecificcountries
+                                        </source_model>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <show_in_store>1</show_in_store>
+                                    </allowspecific>
+                                    <specificcountry translate="label">
+                                        <label>Payment from Specific Countries</label>
+                                        <frontend_type>multiselect</frontend_type>
+                                        <config_path>payment/iways_paypalplus_payment/specificcountry</config_path>
+                                        <sort_order>30</sort_order>
+                                        <source_model>adminhtml/system_config_source_country</source_model>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <show_in_store>1</show_in_store>
+                                        <can_be_empty>1</can_be_empty>
+                                    </specificcountry>
+                                    <third_party_moduls translate="label comment">
+                                        <label>Allowed Third-Party Moduls</label>
+                                        <frontend_type>multiselect</frontend_type>
+                                        <comment>Only select payment methods which doesn't require extra input in
+                                            checkout.
+                                        </comment>
+                                        <config_path>payment/iways_paypalplus_payment/third_party_moduls</config_path>
+                                        <sort_order>40</sort_order>
+                                        <source_model>iways_paypalplus/system_config_source_thirdpartymoduls
+                                        </source_model>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <show_in_store>1</show_in_store>
+                                        <can_be_empty>1</can_be_empty>
+                                    </third_party_moduls>
+                                </fields>
+                            </payment>
+                            <third_party_modul_info type="group" translate="label comment">
+                                <label>PayPalPlus Third party methods info text</label>
+                                <comment>Only selected and saved third party payments will be shown.</comment>
+                                <frontend_type>text</frontend_type>
+                                <frontend_model>
+                                    iways_paypalplus/adminhtml_system_config_fieldset_payment_thirdparty_info
+                                </frontend_model>
+                                <expanded>0</expanded>
+                                <sort_order>25</sort_order>
+                                <show_in_default>1</show_in_default>
+                                <show_in_website>1</show_in_website>
+                                <show_in_store>1</show_in_store>
+                            </third_party_modul_info>
+                            <dev type="group" translate="label">
+                                <label>PayPalPlus Development Settings</label>
+                                <expanded>0</expanded>
+                                <sort_order>30</sort_order>
+                                <show_in_default>1</show_in_default>
+                                <show_in_website>1</show_in_website>
+                                <show_in_store>1</show_in_store>
+                                <fields>
+                                    <debug translate="label">
+                                        <label>Debug</label>
+                                        <frontend_type>select</frontend_type>
+                                        <source_model>adminhtml/system_config_source_yesno</source_model>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>0</show_in_website>
+                                        <show_in_store>0</show_in_store>
+                                        <config_path>iways_paypalplus/dev/debug</config_path>
+                                        <sort_order>10</sort_order>
+                                    </debug>
+                                    <web_profile_id>
+                                        <label>Web-Profile ID</label>
+                                        <show_in_default>0</show_in_default>
+                                        <show_in_website>0</show_in_website>
+                                        <show_in_store>0</show_in_store>
+                                        <config_path>iways_paypalplus/dev/web_profile_id</config_path>
+                                        <sort_order>20</sort_order>
+                                    </web_profile_id>
+                                    <webhook_id>
+                                        <label>Webhook ID</label>
+                                        <show_in_default>0</show_in_default>
+                                        <show_in_website>0</show_in_website>
+                                        <show_in_store>0</show_in_store>
+                                        <config_path>iways_paypalplus/dev/webhook_id</config_path>
+                                        <sort_order>30</sort_order>
+                                    </webhook_id>
+                                </fields>
+                            </dev>
+                        </fields>
+                    </iways_paypalplus_payment>
+                </paypal_payments>
+            </groups>
+        </payment>
+    </sections>
+</config>
