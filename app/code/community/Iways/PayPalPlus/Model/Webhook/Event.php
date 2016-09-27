@@ -131,10 +131,13 @@ class Iways_PayPalPlus_Model_Webhook_Event
         // notify customer
         $invoice = $payment->getCreatedInvoice();
         if ($invoice && !$this->_order->getEmailSent()) {
-            $this->_order->queueNewOrderEmail()->addStatusHistoryComment(
-                Mage::helper('iways_paypalplus')->__('Notified customer about invoice #%s.', $invoice->getIncrementId())
-            )
-                ->setIsCustomerNotified(true)
+            $this->_order->queueNewOrderEmail()
+                ->addStatusHistoryComment(
+                    Mage::helper('iways_paypalplus')->__(
+                        'Notified customer about invoice #%s.',
+                        $invoice->getIncrementId()
+                    )
+                )->setIsCustomerNotified(true)
                 ->save();
         }
 
@@ -161,18 +164,20 @@ class Iways_PayPalPlus_Model_Webhook_Event
             ->setTransactionId($transactionId)
             ->setParentTransactionId($parentTransactionId)
             ->setIsTransactionClosed(1)
-            ->registerRefundNotification($paymentResource->amount->total);
+            ->registerRefundNotification($amount);
 
         $this->_order->save();
 
         $creditmemo = $payment->getCreatedCreditmemo();
         if ($creditmemo) {
             $creditmemo->sendEmail();
-            $this->_order->addStatusHistoryComment(
-                Mage::helper('iways_paypalplus')->__('Notified customer about creditmemo #%s.',
-                    $creditmemo->getIncrementId())
-            )
-                ->setIsCustomerNotified(true)
+            $this->_order
+                ->addStatusHistoryComment(
+                    Mage::helper('iways_paypalplus')->__(
+                        'Notified customer about creditmemo #%s.',
+                        $creditmemo->getIncrementId()
+                    )
+                )->setIsCustomerNotified(true)
                 ->save();
         }
     }
@@ -202,9 +207,12 @@ class Iways_PayPalPlus_Model_Webhook_Event
     {
         $this->_order->setStatus(Mage_Paypal_Model_Info::ORDER_STATUS_REVERSED);
         $this->_order->save();
-        $this->_order->addStatusHistoryComment($webhookEvent->getSummary(),
-            Mage_Paypal_Model_Info::ORDER_STATUS_REVERSED)
-            ->setIsCustomerNotified(false)
+
+        $this->_order
+            ->addStatusHistoryComment(
+                $webhookEvent->getSummary(),
+                Mage_Paypal_Model_Info::ORDER_STATUS_REVERSED
+            )->setIsCustomerNotified(false)
             ->save();
     }
 
@@ -237,19 +245,13 @@ class Iways_PayPalPlus_Model_Webhook_Event
             if (!$resource) {
                 throw new Exception('Event resource not found.');
             }
-            if (isset($resource->parent_payment)) {
-                $transactionId = $resource->parent_payment;
-            } else {
-                $transactionId = $resource->id;
-            }
+
+            $transactionId = $resource->id;
+
             $transaction = Mage::getModel('sales/order_payment_transaction')->load($transactionId, 'txn_id');
             $this->_order = Mage::getModel('sales/order')->load($transaction->getOrderId());
             if (!$this->_order->getId()) {
-                $this->_debugData['exception'] = sprintf('Wrong order ID: "%s".', $id);
-                Mage::app()->getResponse()
-                    ->setHeader('HTTP/1.1', '503 Service Unavailable')
-                    ->sendResponse();
-                exit;
+                Mage::throwException('Order not found.');
             }
         }
         return $this->_order;

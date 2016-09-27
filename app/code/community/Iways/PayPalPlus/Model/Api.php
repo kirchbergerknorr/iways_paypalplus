@@ -20,11 +20,13 @@
  */
 use PayPal\Rest\ApiContext;
 use PayPal\Auth\OAuthTokenCredential;
+use PayPal\Api\Address;
 use PayPal\Api\WebProfile;
 use PayPal\Api\Presentation;
 use PayPal\Api\Payment;
 use PayPal\Api\Amount;
 use PayPal\Api\Details;
+use PayPal\Api\InputFields;
 use PayPal\Api\Item;
 use PayPal\Api\ItemList;
 use PayPal\Api\Payer;
@@ -49,6 +51,9 @@ class Iways_PayPalPlus_Model_Api
      * Webhook url already exists error code
      */
     const WEBHOOK_URL_ALREADY_EXISTS = 'WEBHOOK_URL_ALREADY_EXISTS';
+
+    const PATCH_ADD = 'add';
+    const PATCH_REPLACE = 'replace';
 
     /**
      * @var null|ApiContext
@@ -76,20 +81,27 @@ class Iways_PayPalPlus_Model_Api
      */
     public function setApiContext($website = null)
     {
-        $this->_apiContext = new ApiContext(new OAuthTokenCredential(
-            Mage::getStoreConfig('iways_paypalplus/api/client_id', $website),
-            Mage::getStoreConfig('iways_paypalplus/api/client_secret', $website)));
+        $this->_apiContext = new ApiContext(
+            new OAuthTokenCredential(
+                Mage::getStoreConfig('iways_paypalplus/api/client_id', $website),
+                Mage::getStoreConfig('iways_paypalplus/api/client_secret', $website)
+            )
+        );
 
         $this->_mode = Mage::getStoreConfig('iways_paypalplus/api/mode', $website);
-        $this->_apiContext->setConfig(array(
-            'http.ConnectionTimeOut' => 30,
-            'http.Retry' => 1,
-            'mode' => $this->_mode,
-            'log.LogEnabled' => Mage::getStoreConfig('dev/log/active', $website),
-            'log.FileName' => Mage::getBaseDir('log') . DS . 'PayPal.log',
-            'log.LogLevel' => 'INFO'
-        ));
-        $this->_apiContext->addRequestHeader('PayPal-Partner-Attribution-Id', 'Magento_Cart_PayPalPlus');
+        $this->_apiContext->setConfig(
+            array(
+                'http.ConnectionTimeOut' => 30,
+                'http.Retry' => 1,
+                'mode' => $this->_mode,
+                'log.LogEnabled' => Mage::getStoreConfig('dev/log/active', $website),
+                'log.FileName' => Mage::getBaseDir('log') . DS . 'PayPal.log',
+                'log.LogLevel' => 'INFO'
+            )
+        );
+
+        $this->_apiContext->addRequestHeader('PayPal-Partner-Attribution-Id',
+            Mage::getSingleton('iways_paypalplus/partner_config')->getPartnerId());
         return $this;
     }
 
@@ -101,11 +113,11 @@ class Iways_PayPalPlus_Model_Api
     public function getPaymentExperience()
     {
         $paymentExperience = Mage::registry('payment_experience');
-        if (is_null($paymentExperience)) {
+        if ($paymentExperience === null) {
             $webProfile = $this->buildWebProfile();
             if ($webProfile) {
                 $payment = $this->createPayment($webProfile, $this->getQuote());
-                $paymentExperience = ($payment) ? $payment->getApprovalLink() : false;
+                $paymentExperience = $payment ? $payment->getApprovalLink() : false;
             } else {
                 $paymentExperience = false;
             }
@@ -116,8 +128,9 @@ class Iways_PayPalPlus_Model_Api
 
     /**
      * Get a payment
-     * @param type $paymentId
-     * @return type
+     *
+     * @param string $paymentId
+     * @return Payment
      */
     public function getPayment($paymentId)
     {
@@ -133,23 +146,15 @@ class Iways_PayPalPlus_Model_Api
      */
     public function createPayment($webProfile, $quote, $taxFailure = false)
     {
-        $payer = new Payer();
-        $payer->setPaymentMethod("paypal");
-
+        $payer = $this->buildPayer($quote);
 
         $itemList = $this->buildItemList($quote, $taxFailure);
-        $shippingAddress = $this->buildShippingAddress($quote);
-        if ($shippingAddress) {
-            $itemList->setShippingAddress($shippingAddress);
-        }
 
         $amount = $this->buildAmount($quote);
 
         $transaction = new Transaction();
         $transaction->setAmount($amount);
-
         $transaction->setItemList($itemList);
-
 
         $baseUrl = Mage::getBaseUrl();
         $redirectUrls = new RedirectUrls();
@@ -192,25 +197,61 @@ class Iways_PayPalPlus_Model_Api
             $payment = Payment::get(Mage::getSingleton('customer/session')->getPayPalPaymentId(), $this->_apiContext);
             $patchRequest = new PatchRequest();
 
-            $transactions = $payment->getTransactions();
-            if (is_null($transactions[0]->getItemList()->getShippingAddress())) {
-                $addressMode = 'add';
-            } else {
-                $addressMode = 'replace';
-            }
             $shippingAddress = $this->buildShippingAddress($quote);
             $addressPatch = new Patch();
-            $addressPatch->setOp($addressMode);
+            $addressPatch->setOp(self::PATCH_ADD);
             $addressPatch->setPath('/transactions/0/item_list/shipping_address');
             $addressPatch->setValue($shippingAddress);
             $patchRequest->addPatch($addressPatch);
 
-            $response = $payment->update($patchRequest,
-                $this->_apiContext);
+            $payerInfo = $this->buildBillingAddress($quote);
+            $payerInfoPatch = new Patch();
+            $payerInfoPatch->setOp(self::PATCH_ADD);
+            $payerInfoPatch->setPath('/potential_payer_info/billing_address');
+            $payerInfoPatch->setValue($payerInfo);
+            $patchRequest->addPatch($payerInfoPatch);
+
+            $amount = $this->buildAmount($quote);
+            $amountPatch = new Patch();
+            $amountPatch->setOp(self::PATCH_REPLACE);
+            $amountPatch->setPath('/transactions/0/amount');
+            $amountPatch->setValue($amount);
+            $patchRequest->addPatch($amountPatch);
+            $response = $payment->update(
+                $patchRequest,
+                $this->_apiContext
+            );
 
             return $response;
         }
         return false;
+    }
+
+
+    /**
+     * Patches invoice number to PayPal transaction
+     * (Magento order increment id)
+     *
+     * @param $paymentId
+     * @param $invoiceNumber
+     * @return bool
+     */
+    public function patchInvoiceNumber($paymentId, $invoiceNumber)
+    {
+        $payment = Payment::get($paymentId, $this->_apiContext);
+
+        $patchRequest = new PatchRequest();
+
+        $invoiceNumberPatch = new Patch();
+        $invoiceNumberPatch->setOp('add');
+        $invoiceNumberPatch->setPath('/transactions/0/invoice_number');
+        $invoiceNumberPatch->setValue($invoiceNumber);
+        $patchRequest->addPatch($invoiceNumberPatch);
+
+        $response = $payment->update($patchRequest,
+            $this->_apiContext);
+
+        return $response;
     }
 
     /**
@@ -252,7 +293,9 @@ class Iways_PayPalPlus_Model_Api
         $refund = new \PayPal\Api\Refund();
 
         $ppAmount = new Amount();
-        $ppAmount->setCurrency(Mage::app()->getStore()->getCurrentCurrencyCode())->setTotal($amount);
+        $ppAmount
+            ->setCurrency(Mage::app()->getStore()->getCurrentCurrencyCode())
+            ->setTotal($amount);
         $refund->setAmount($ppAmount);
 
         return $sale->refund($refund, $this->_apiContext);
@@ -335,24 +378,9 @@ class Iways_PayPalPlus_Model_Api
             $webhookEventTypes[] = $webhookEventType;
         }
         $webhook->setEventTypes($webhookEventTypes);
-        try {
-            $webhookData = $webhook->create($this->_apiContext);
-            $this->saveWebhookId($webhookData->getId());
-            return $webhookData;
-        } catch (PayPal\Exception\PayPalConnectionException $ex) {
-            if ($ex->getData()) {
-                $data = Mage::helper('core')->jsonDecode($ex->getData());
-                if ($data['name'] == self::WEBHOOK_URL_ALREADY_EXISTS) {
-                    return true;
-                }
-            }
-            Mage::helper('iways_paypalplus')->handleException($ex);
-            return false;
-        } catch (Exception $e) {
-            Mage::logException($e);
-            return false;
-        }
-        return false;
+        $webhookData = $webhook->create($this->_apiContext);
+        $this->saveWebhookId($webhookData->getId());
+        return $webhookData;
     }
 
     /**
@@ -411,7 +439,6 @@ class Iways_PayPalPlus_Model_Api
             'setCountryCode' => $address->getCountryId(),
             'setPostalCode' => $address->getPostcode(),
             'setState' => $address->getRegion(),
-            /*'setPhone' => $address->getTelephone()*/
         );
         $allowedEmpty = array('setPhone', 'setState');
         $shippingAddress = new ShippingAddress();
@@ -421,8 +448,75 @@ class Iways_PayPalPlus_Model_Api
             }
             $shippingAddress->{$setter}($value);
         }
-
         return $shippingAddress;
+    }
+
+    /**
+     * Build BillingAddress from quote
+     *
+     * @param Mage_Sales_Model_Quote $quote
+     * @return ShippingAddress
+     */
+    protected function buildBillingAddress($quote)
+    {
+        $address = $quote->getBillingAddress();
+        $addressCheckerArray = array(
+            'setLine1' => implode(' ', $address->getStreet()),
+            'setCity' => $address->getCity(),
+            'setCountryCode' => $address->getCountryId(),
+            'setPostalCode' => $address->getPostcode(),
+            'setState' => $address->getRegion(),
+        );
+        $allowedEmpty = array('setPhone', 'setState');
+        $billingAddress = new Address();
+        foreach ($addressCheckerArray as $setter => $value) {
+            if (empty($value) && !in_array($setter, $allowedEmpty)) {
+                return false;
+            }
+            $billingAddress->{$setter}($value);
+        }
+
+        return $billingAddress;
+    }
+
+    /**
+     * Build Payer for payment
+     *
+     * @param $quote
+     * @return Payer
+     */
+    protected function buildPayer($quote)
+    {
+        $payer = new Payer();
+        $payer->setPaymentMethod("paypal");
+        return $payer;
+    }
+
+    /**
+     * Build PayerInfo for Payer
+     *
+     * @param $quote
+     * @return PayerInfo
+     */
+    protected function buildPayerInfo($quote)
+    {
+        $payerInfo = new PayerInfo();
+        $address = $quote->getBillingAddress();
+        if ($address->getFirstname()) {
+            $payerInfo->setFirstName($address->getFirstname());
+        }
+        if ($address->getMiddlename()) {
+            $payerInfo->setMiddleName($address->getMiddlename());
+        }
+        if ($address->getLastname()) {
+            $payerInfo->setLastName($address->getLastname());
+        }
+
+        $billingAddress = $this->buildBillingAddress($quote);
+        if ($billingAddress) {
+            $payerInfo->setBillingAddress($billingAddress);
+        }
+        return $payerInfo;
     }
 
     /**
@@ -456,7 +550,7 @@ class Iways_PayPalPlus_Model_Api
     {
         $itemArray = array();
         $itemList = new ItemList();
-        $currencyCode = Mage::app()->getStore()->getCurrentCurrencyCode();
+        $currencyCode = $quote->getBaseCurrencyCode();
 
         if (!$taxFailure) {
             foreach ($quote->getAllVisibleItems() as $quoteItem) {
@@ -470,7 +564,7 @@ class Iways_PayPalPlus_Model_Api
                     ->setSku($quoteItem->getSku())
                     ->setCurrency($currencyCode)
                     ->setQuantity(1)
-                    ->setPrice($quoteItem->getRowTotal());
+                    ->setPrice($quoteItem->getBaseRowTotal());
 
                 $itemArray[] = $item;
             }
@@ -489,15 +583,25 @@ class Iways_PayPalPlus_Model_Api
     protected function buildAmount($quote)
     {
         $details = new Details();
-        $details->setShipping($quote->getShippingAddress()->getShippingAmount())
-            ->setTax($quote->getShippingAddress()->getTaxAmount())
-            ->setSubtotal($quote->getSubtotalWithDiscount() + $quote->getShippingAddress()->getHiddenTaxAmount());
-            /*- $quote->getShippingAddress()->getBaseGiftcertAmount()*/
+        $details->setShipping($quote->getShippingAddress()->getBaseShippingAmount())
+            ->setTax(
+                $quote->getBillingAddress()->getBaseTaxAmount()
+                + $quote->getBillingAddress()->getBaseHiddenTaxAmount()
+                + $quote->getShippingAddress()->getBaseTaxAmount()
+                + $quote->getShippingAddress()->getBaseHiddenTaxAmount()
+            )
+            ->setSubtotal(
+                $quote->getBaseSubtotal()
+            );
 
+        $totals = $quote->getTotals();
+        if (isset($totals['discount']) && $totals['discount']->getValue()) {
+            $details->setShippingDiscount(-$totals['discount']->getValue());
+        }
         $amount = new Amount();
-        $amount->setCurrency(Mage::app()->getStore()->getCurrentCurrencyCode())
+        $amount->setCurrency($quote->getBaseCurrencyCode())
             ->setDetails($details)
-            ->setTotal($quote->getGrandTotal());
+            ->setTotal($quote->getBaseGrandTotal());
 
         return $amount;
     }
@@ -518,6 +622,9 @@ class Iways_PayPalPlus_Model_Api
         try {
             $webProfile->setName('magento_' . microtime());
             $webProfile->setPresentation($this->buildWebProfilePresentation());
+            $inputFields = new InputFields();
+            $inputFields->setAddressOverride(1);
+            $webProfile->setInputFields($inputFields);
             $response = $webProfile->create($this->_apiContext);
             $this->saveWebProfileId($response->getId());
             return $response;
@@ -537,8 +644,13 @@ class Iways_PayPalPlus_Model_Api
         $presentation = new Presentation();
         $presentation->setBrandName(Mage::app()->getWebsite()->getName());
         $presentation->setLogoImage($this->getHeaderImage());
-        $presentation->setLocaleCode(substr(Mage::getStoreConfig('general/locale/code'),
-            3, 2));
+        $presentation->setLocaleCode(
+            substr(
+                Mage::getStoreConfig('general/locale/code'),
+                3,
+                2
+            )
+        );
         return $presentation;
     }
 
@@ -552,8 +664,10 @@ class Iways_PayPalPlus_Model_Api
         if (Mage::getStoreConfig('iways_paypalplus/api/hdrimg')) {
             return Mage::getStoreConfig('iways_paypalplus/api/hdrimg');
         }
-        return Mage::getDesign()->getSkinUrl(Mage::getStoreConfig('design/header/logo_src'),
-            array('_secure' => true));
+        return Mage::getDesign()->getSkinUrl(
+            Mage::getStoreConfig('design/header/logo_src'),
+            array('_secure' => true)
+        );
     }
 
     /**
@@ -564,8 +678,12 @@ class Iways_PayPalPlus_Model_Api
     public function resetWebProfileId()
     {
         foreach (Mage::app()->getStores() as $store) {
-            Mage::getModel('core/config')->saveConfig('iways_paypalplus/dev/web_profile_id',
-                false, 'stores', $store->getId());
+            Mage::getModel('core/config')->saveConfig(
+                'iways_paypalplus/dev/web_profile_id',
+                false,
+                'stores',
+                $store->getId()
+            );
         }
         Mage::app()->getCacheInstance()->cleanType('config');
         return true;
@@ -618,16 +736,19 @@ class Iways_PayPalPlus_Model_Api
      *
      * Uses WebProfile::get_list()
      *
+     * @param $website
      * @return bool
      */
     public function testCredentials($website)
     {
         try {
             $this->setApiContext($website);
-            $response = WebProfile::get_list($this->_apiContext);
+            WebProfile::get_list($this->_apiContext);
             return true;
         } catch (PayPal\Exception\PayPalConnectionException $ex) {
-            Mage::getSingleton('adminhtml/session')->addError(Mage::helper('iways_paypalplus')->__('Provided credentials not valid.'));
+            Mage::getSingleton('adminhtml/session')->addError(
+                Mage::helper('iways_paypalplus')->__('Provided credentials not valid.')
+            );
             return false;
         } catch (Exception $e) {
             Mage::logException($e);

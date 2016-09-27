@@ -1,0 +1,22 @@
+<?php
+/**
+ * @see Iways_PayPalPlus_Block_Payment_Info
+ */
+?>
+<p><strong><?php echo Mage::helper('iways_paypalplus')->__('PayPal Plus'); ?></strong></p>
+<?php if ($_specificInfo = $this->getSpecificInformation()):?>
+    <p><?php echo Mage::helper('iways_paypalplus')->__('Please transfer the invoice amount to the given account within the payment deadline.'); ?></p>
+    <table>
+        <tbody>
+        <?php foreach ($_specificInfo as $_label => $_value):?>
+            <tr>
+                <th><strong><?php echo $this->escapeHtml($_label)?>:</strong></th>
+            </tr>
+            <tr>
+                <td><?php echo nl2br(implode($this->getValueAsArray($_value, true), "\n"))?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php endif;?>
+<?php echo $this->getChildHtml()?>

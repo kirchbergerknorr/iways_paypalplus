@@ -67,12 +67,6 @@ class PayPalHttpConnection
      * Executes an HTTP request
      *
      * @param string $data query string OR POST content as a string
-     * @throws PayPalConnectionException
-     */
-    /**
-     * Executes an HTTP request
-     *
-     * @param string $data query string OR POST content as a string
      * @return mixed
      * @throws PayPalConnectionException
      */
@@ -93,6 +87,8 @@ class PayPalHttpConnection
         switch ($this->httpConfig->getMethod()) {
             case 'POST':
                 curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+                break;
             case 'PUT':
             case 'PATCH':
             case 'DELETE':

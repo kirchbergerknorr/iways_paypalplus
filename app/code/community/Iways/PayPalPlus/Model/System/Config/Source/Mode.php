@@ -29,6 +29,16 @@ class Iways_PayPalPlus_Model_System_Config_Source_Mode
 {
 
     /**
+     * Live string
+     */
+    const LIVE = 'live';
+
+    /**
+     * Sandbox string
+     */
+    const SANDBOX = 'sandbox';
+
+    /**
      * Options getter
      *
      * @return array
@@ -36,8 +46,8 @@ class Iways_PayPalPlus_Model_System_Config_Source_Mode
     public function toOptionArray()
     {
         return array(
-            array('value' => 'live', 'label' => Mage::helper('iways_paypalplus')->__('Live')),
-            array('value' => 'sandbox', 'label' => Mage::helper('iways_paypalplus')->__('Sandbox')),
+            array('value' => self::LIVE, 'label' => Mage::helper('iways_paypalplus')->__('Live')),
+            array('value' => self::SANDBOX, 'label' => Mage::helper('iways_paypalplus')->__('Sandbox')),
         );
     }
 
@@ -49,8 +59,8 @@ class Iways_PayPalPlus_Model_System_Config_Source_Mode
     public function toArray()
     {
         return array(
-            'sandbox' => Mage::helper('iways_paypalplus')->__('Sandbox'),
-            'live' => Mage::helper('iways_paypalplus')->__('Live'),
+            self::SANDBOX => Mage::helper('iways_paypalplus')->__('Sandbox'),
+            self::LIVE => Mage::helper('iways_paypalplus')->__('Live'),
         );
     }
 }

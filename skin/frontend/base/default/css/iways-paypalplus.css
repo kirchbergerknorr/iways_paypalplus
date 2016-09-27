@@ -63,3 +63,75 @@
 }
 
 #checkout-payment-method-load .form-list .ppp li{margin-bottom:0px;padding-bottom: 8px;}
+div.ppp-pui table{margin-left: auto;margin-right: auto;margin-bottom:15px;}
+div.ppp-pui table tbody tr td{text-align:left;padding:0 5px;}
+
+/* Third party methods */
+body.opc-index-index #checkout-payment-method-load dt.ppp label{color: inherit;text-align: inherit;height: inherit;text-transform: inherit;line-height: inherit;}
+
+/* Amasty Scheckout */
+.amscheckout .payment-method dt.ppp {
+    background-color: #fff;
+    margin: 0;
+    padding:0;
+    border-top: 1px solid #dfdfdf;
+    overflow: hidden;
+}
+
+.amscheckout .payment-method dt.ppp label {
+    padding: 0px;
+    background: transparent;
+    width: 100%;
+    display: inline-block;
+    cursor: pointer;
+    padding: 20px 10px !important;
+    font-family: Arial !important;
+    font-size: 12px !important;
+    font-weight: normal !important;
+}
+
+.amscheckout .payment-method dt.ppp.ppp-selected {
+    background-image: url("../images/iways/checkmark.png");
+    background-repeat: no-repeat;
+    background-position: right 15px;
+    background-color: #f9f9f9;
+}
+.amscheckout .payment-method dt.ppp.ppp-selected label{font-weight: bold;padding-bottom:10px;}
+
+.amscheckout .payment-method dd.ppp.ppp-selected {
+    background-color: #f9f9f9;
+    padding:0 0 10px;
+}
+
+.amscheckout .payment-method dt.ppp:hover {
+    background-color: #f9f9f9;
+}
+
+.amscheckout .payment-method dt.ppp input {
+    display: none;
+}
+
+.amscheckout .payment-method dt.ppp label:hover {
+    background: transparent;
+}
+
+.amscheckout .payment-method dd.ppp {
+    padding:0;
+}
+.amscheckout .payment-method dd.ppp:last-child {
+    border-bottom: 1px solid #dfdfdf;
+}
+
+.amscheckout .payment-method dt.ppp.iways_paypalplus_payment {
+    border-top: none;
+}
+
+.amscheckout .payment-method dd.ppp.iways_paypalplus_payment {
+    border-bottom: none;
+}
+
+.amscheckout .payment-method dd.ppp.iways_paypalplus_payment.ppp-selected {
+    background: transparent;
+}
+
+.amscheckout .payment-method .form-list .ppp li{margin-bottom:0px;padding-bottom: 8px;}

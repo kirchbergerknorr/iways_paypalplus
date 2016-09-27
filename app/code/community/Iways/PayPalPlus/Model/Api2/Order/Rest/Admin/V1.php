@@ -18,23 +18,14 @@
  *
  */
 
+
 /**
- * Iways PayPalPlus Idev Checkout Block
+ * API2 class for orders (admin)
  *
  * @category   Iways
  * @package    Iways_PayPalPlus
- * @author robert
+ * @author     robert
  */
-class Iways_PayPalPlus_Block_Idev_Checkout extends Idev_OneStepCheckout_Block_Checkout
+class Iways_PayPalPlus_Model_Api2_Order_Rest_Admin_V1 extends Iways_PayPalPlus_Model_Api2_Order_Rest
 {
-    /**
-     * Skip saving order
-     *
-     * We only need the data in our quote
-     * @return bool
-     */
-    protected function _saveOrder()
-    {
-        return true;
-    }
 }

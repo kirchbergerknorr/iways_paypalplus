@@ -83,7 +83,7 @@
                                     </paypalplus_hdrimg>
                                 </fields>
                             </api>
-                            <payment type="group">
+                            <payment type="group" translate="label" module="iways_paypalplus">
                                 <label>PayPalPlus Payment Settings</label>
                                 <sort_order>20</sort_order>
                                 <show_in_default>1</show_in_default>
@@ -101,11 +101,40 @@
                                         <show_in_website>1</show_in_website>
                                         <show_in_store>1</show_in_store>
                                     </active>
+                                    <title translate="label">
+                                        <label>Title</label>
+                                        <frontend_type>text</frontend_type>
+                                        <config_path>payment/iways_paypalplus_payment/title</config_path>
+                                        <sort_order>12</sort_order>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <show_in_store>1</show_in_store>
+                                    </title>
+                                    <show_loading_indicator translate="label">
+                                        <label>Show loading indicator</label>
+                                        <frontend_type>select</frontend_type>
+                                        <config_path>payment/iways_paypalplus_payment/show_loading_indicator</config_path>
+                                        <source_model>adminhtml/system_config_source_yesno</source_model>
+                                        <sort_order>15</sort_order>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <show_in_store>1</show_in_store>
+                                    </show_loading_indicator>
+                                    <transfer_reserved_order_id translate="label">
+                                        <label>Transfer order's ID as PayPal invoice number</label>
+                                        <frontend_type>select</frontend_type>
+                                        <config_path>payment/iways_paypalplus_payment/transfer_reserved_order_id</config_path>
+                                        <source_model>adminhtml/system_config_source_yesno</source_model>
+                                        <sort_order>20</sort_order>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <show_in_store>1</show_in_store>
+                                    </transfer_reserved_order_id>
                                     <allowspecific translate="label">
                                         <label>Payment from Applicable Countries</label>
                                         <frontend_type>allowspecific</frontend_type>
                                         <config_path>payment/iways_paypalplus_payment/allowspecific</config_path>
-                                        <sort_order>20</sort_order>
+                                        <sort_order>30</sort_order>
                                         <source_model>adminhtml/system_config_source_payment_allspecificcountries
                                         </source_model>
                                         <show_in_default>1</show_in_default>
@@ -116,7 +145,7 @@
                                         <label>Payment from Specific Countries</label>
                                         <frontend_type>multiselect</frontend_type>
                                         <config_path>payment/iways_paypalplus_payment/specificcountry</config_path>
-                                        <sort_order>30</sort_order>
+                                        <sort_order>40</sort_order>
                                         <source_model>adminhtml/system_config_source_country</source_model>
                                         <show_in_default>1</show_in_default>
                                         <show_in_website>1</show_in_website>
@@ -130,7 +159,7 @@
                                             checkout.
                                         </comment>
                                         <config_path>payment/iways_paypalplus_payment/third_party_moduls</config_path>
-                                        <sort_order>40</sort_order>
+                                        <sort_order>50</sort_order>
                                         <source_model>iways_paypalplus/system_config_source_thirdpartymoduls
                                         </source_model>
                                         <show_in_default>1</show_in_default>
@@ -144,9 +173,7 @@
                                 <label>PayPalPlus Third party methods info text</label>
                                 <comment>Only selected and saved third party payments will be shown.</comment>
                                 <frontend_type>text</frontend_type>
-                                <frontend_model>
-                                    iways_paypalplus/adminhtml_system_config_fieldset_payment_thirdparty_info
-                                </frontend_model>
+                                <frontend_model>iways_paypalplus/adminhtml_system_config_thirdpartyinfo</frontend_model>
                                 <expanded>0</expanded>
                                 <sort_order>25</sort_order>
                                 <show_in_default>1</show_in_default>
@@ -171,6 +198,16 @@
                                         <config_path>iways_paypalplus/dev/debug</config_path>
                                         <sort_order>10</sort_order>
                                     </debug>
+                                    <pui_sandbox translate="label">
+                                        <label>Show PuI in Sandbox</label>
+                                        <frontend_type>select</frontend_type>
+                                        <source_model>adminhtml/system_config_source_yesno</source_model>
+                                        <show_in_default>1</show_in_default>
+                                        <show_in_website>1</show_in_website>
+                                        <show_in_store>0</show_in_store>
+                                        <config_path>iways_paypalplus/dev/pui_sandbox</config_path>
+                                        <sort_order>20</sort_order>
+                                    </pui_sandbox>
                                     <web_profile_id>
                                         <label>Web-Profile ID</label>
                                         <show_in_default>0</show_in_default>

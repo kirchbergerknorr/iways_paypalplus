@@ -27,6 +27,11 @@
         </reference>
     </checkout_onepage_index>
     <checkout_onepage_success>
+        <reference  name="head">
+            <action method="addCss" ifconfig="payment/iways_paypalplus_payment/active">
+                <stylesheet>css/iways-paypalplus.css</stylesheet>
+            </action>
+        </reference>
         <reference name="content">
             <block type="iways_paypalplus/onepage_success"
                    name="ppp-success"
@@ -42,73 +47,8 @@
         </reference>
     </checkout_onepage_paymentmethod>
     <checkout_onepage_review>
-        <reference name="checkout.onepage.review.button">
-            <action method="setTemplate" ifconfig="payment/iways_paypalplus_payment/active">
-                <template>paypalplus/review/button.phtml</template>
-            </action>
+        <reference name="root">
+            <block type="iways_paypalplus/onepage_review_button" name="checkout.onepage.review.button" as="button" template="paypalplus/review/button.phtml"/>
         </reference>
     </checkout_onepage_review>
-    <onestepcheckout_index_index>
-        <reference  name="head" ifconfig="payment/iways_paypalplus_payment/active">
-            <block type="core/text" name="ppplus"  ifconfig="payment/iways_paypalplus_payment/active">
-                <action method="setText"><text><![CDATA[<script src="//www.paypalobjects.com/webstatic/ppplus/ppplus.min.js" type="text/javascript"></script>]]></text></action>
-            </block>
-            <action method="addCss" ifconfig="payment/iways_paypalplus_payment/active">
-                <stylesheet>css/iways-paypalplus.css</stylesheet>
-            </action>
-        </reference>
-        <reference name="onestepcheckout.checkout">
-            <action method="setTemplate" ifconfig="payment/iways_paypalplus_payment/active">
-                <template>paypalplus/onestepcheckout/checkout.phtml</template>
-            </action>
-        </reference>
-        <reference name="choose-payment-method">
-            <action method="setTemplate" ifconfig="payment/iways_paypalplus_payment/active">
-                <template>paypalplus/onestepcheckout/payment_method.phtml</template>
-            </action>
-        </reference>
-    </onestepcheckout_index_index>
-    <onestepcheckout_ajax_set_methods_separate>
-        <reference name="choose-payment-method">
-            <action method="setTemplate" ifconfig="payment/iways_paypalplus_payment/active">
-                <template>paypalplus/onestepcheckout/payment_method.phtml</template>
-            </action>
-        </reference>
-    </onestepcheckout_ajax_set_methods_separate>
-    <onestepcheckout_ajax_save_billing>
-        <reference name="choose-payment-method">
-            <action method="setTemplate" ifconfig="payment/iways_paypalplus_payment/active">
-                <template>paypalplus/onestepcheckout/payment_method.phtml</template>
-            </action>
-        </reference>
-    </onestepcheckout_ajax_save_billing>
-    <onestepcheckout_ajax_paymentrefresh>
-        <reference name="choose-payment-method">
-            <action method="setTemplate" ifconfig="payment/iways_paypalplus_payment/active">
-                <template>paypalplus/onestepcheckout/payment_method.phtml</template>
-            </action>
-        </reference>
-    </onestepcheckout_ajax_paymentrefresh>
-    <firecheckout_index_index>
-        <reference  name="head">
-            <block type="core/text" name="ppplus" ifconfig="payment/iways_paypalplus_payment/active">
-                <action method="setText"><text><![CDATA[<script src="//www.paypalobjects.com/webstatic/ppplus/ppplus.min.js" type="text/javascript"></script>]]></text></action>
-            </block>
-            <action method="addCss" ifconfig="payment/iways_paypalplus_payment/active">
-                <stylesheet>css/iways-paypalplus.css</stylesheet>
-            </action>
-        </reference>
-        <reference name="checkout.payment.methods">
-            <action method="setTemplate" ifconfig="payment/iways_paypalplus_payment/active">
-                <template>paypalplus/firecheckout/checkout/payment/methods.phtml</template>
-            </action>
-        </reference>
-    </firecheckout_index_index>
-    <firecheckout_index_updatecheckout>
-        <reference name="checkout.payment.method">
-            <action method="setTemplate" ifconfig="payment/iways_paypalplus_payment/active">
-                <template>paypalplus/firecheckout/checkout/payment/methods.phtml</template>
-            </action>
-        </reference>
-    </firecheckout_index_updatecheckout>
 </layout>

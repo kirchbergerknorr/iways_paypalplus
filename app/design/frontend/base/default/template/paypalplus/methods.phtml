@@ -32,33 +32,40 @@
  */
 ?>
 <script type="text/javascript">delete window.ppp;
-    if(typeof payment.parentSwitchMethod == 'undefined') {
+    if (typeof payment.parentSwitchMethod == 'undefined') {
         payment.parentSwitchMethod = payment.switchMethod;
-        payment.switchMethod = function(method) {
-            if(window.ppp != null && method != 'iways_paypalplus_payment' && typeof window.thirdPartyMethodObject[method] == 'undefined') {
+        payment.switchMethod = function (method) {
+            if (
+                window.ppp != null && method != '<?php echo Iways_PayPalPlus_Model_Payment::METHOD_CODE; ?>'
+                && typeof window.thirdPartyMethodObject[method] == 'undefined'
+            ) {
                 window.externMethodEnabled = true;
                 window.ppp.deselectPaymentMethod();
-            }else {
+            } else {
                 window.externMethodEnabled = false;
             }
-            try{
-                $$('.ppp').each(function(element){element.removeClassName('ppp-selected')});
-                $$('.ppp.'+method).each(function(element){element.addClassName('ppp-selected')});
-            }catch(e) {
+            try {
+                $$('.ppp').each(function (element) {
+                    element.removeClassName('ppp-selected')
+                });
+                $$('.ppp.' + method).each(function (element) {
+                    element.addClassName('ppp-selected')
+                });
+            } catch (e) {
                 console.log(e);
             }
             try {
                 console.log('enable');
-                if($$('#payment-buttons-container > button').length > 0) {
+                if ($$('#payment-buttons-container > button').length > 0) {
                     $$('#payment-buttons-container > button')[0].enable();
                 }
-                if($('onestepcheckout-place-order') != null) {
+                if ($('onestepcheckout-place-order') != null) {
                     $('onestepcheckout-place-order').enable();
                 }
-                if($$('#review-buttons-container > button').length > 0) {
+                if ($$('#review-buttons-container > button').length > 0) {
                     $$('#review-buttons-container > button')[0].enable();
                 }
-            }catch (e) {
+            } catch (e) {
                 console.log(e);
             }
             return this.parentSwitchMethod(method);
@@ -68,27 +75,13 @@
 <?php
 $methods = $this->getMethods();
 $oneMethod = count($methods) <= 1;
-$thirdPartyMethods = Mage::getStoreConfig('payment/iways_paypalplus_payment/third_party_moduls');
-$thirdPartyPayPalMethods = array();
-$paymentExperience  = Mage::helper('iways_paypalplus')->getPaymentExperience();
-if (!empty($thirdPartyMethods)) {
-    $thirdPartyMethods = explode(',', $thirdPartyMethods);
-}else {
-    $thirdPartyMethods = array();
-}
-$thirdPartyMethods = array_merge($thirdPartyMethods, array('paypaluk_direct', 'paypaluk_express', 'paypal_standard', 'paypal_direct', 'paypal_express_bml', 'paypal_express'));
-foreach($thirdPartyMethods as $thirdPartyMethod) {
-    $thirdPartyPayPalMethods[$thirdPartyMethod] = true;
-}
-$pppActive = false;
-if($paymentExperience) {
-    foreach ($methods as $_method){
-        if($_method->getCode() == 'iways_paypalplus_payment') $pppActive = true;
-    }
-}
+
+$thirdPartyMethods = $this->getThirdPartyMethods();
+$pppActive = $this->isPPPActive();
+
 $hideStyle = ' style="display:none;"';
 ?>
-<?php if (empty($methods) && !$paymentExperience): ?>
+<?php if (empty($methods) && !$pppActive): ?>
     <dt>
         <?php echo $this->__('No Payment Methods') ?>
     </dt>
@@ -97,22 +90,35 @@ $hideStyle = ' style="display:none;"';
     <?php //else:
     foreach ($methods as $_method) :
         $_code = $_method->getCode();
-        if(isset($thirdPartyPayPalMethods[$_code]) && $pppActive) {
+        if (isset($thirdPartyMethods[$_code]) && $pppActive) {
             $hide = true;
-        }else {
+        } else {
             $hide = false;
         }
         ?>
-        <dt class="ppp <?php echo $_code?>"<?php if($hide || $_code == 'iways_paypalplus_payment') echo $hideStyle; ?>>
-            <?php if(!$oneMethod): ?>
-                <input id="p_method_<?php echo $_code ?>" value="<?php echo $_code ?>" type="radio" name="payment[method]" title="<?php echo $this->escapeHtml($_method->getTitle()) ?>" onclick="payment.switchMethod('<?php echo $_code ?>')"<?php if($this->getSelectedMethodCode()==$_code): ?> checked="checked"<?php endif; ?> class="radio" />
+        <dt class="ppp <?php echo $_code ?>"<?php if ($hide || $_code == Iways_PayPalPlus_Model_Payment::METHOD_CODE) {
+            echo $hideStyle;
+        } ?>>
+            <?php if (!$oneMethod): ?>
+                <input id="p_method_<?php echo $_code ?>" value="<?php echo $_code ?>" type="radio"
+                       name="payment[method]" title="<?php echo $this->escapeHtml($_method->getTitle()) ?>"
+                       onclick="payment.switchMethod('<?php echo $_code ?>')"
+                    <?php if ($this->getSelectedMethodCode() == $_code): ?> checked="checked"<?php endif; ?>
+                       class="radio"/>
             <?php else: ?>
-                <span class="no-display"><input id="p_method_<?php echo $_code ?>" value="<?php echo $_code ?>" type="radio" name="payment[method]" checked="checked" class="radio" /></span>
+                <span class="no-display"><input id="p_method_<?php echo $_code ?>" value="<?php echo $_code ?>"
+                                                type="radio" name="payment[method]" checked="checked"
+                                                class="radio"/></span>
                 <?php $oneMethod = $_code; ?>
             <?php endif; ?>
-            <label for="p_method_<?php echo $_code ?>"><?php echo $this->escapeHtml($this->getMethodTitle($_method)) ?> <?php echo $this->getMethodLabelAfterHtml($_method) ?></label>
+            <label for="p_method_<?php echo $_code ?>">
+                <?php echo $this->escapeHtml($this->getMethodTitle($_method)) ?>
+                <?php echo $this->getMethodLabelAfterHtml($_method) ?>
+            </label>
         </dt>
-        <dd class="ppp <?php echo $_code?>"<?php if($hide) echo $hideStyle; ?>><?php if ($html = $this->getPaymentMethodFormHtml($_method)): ?><?php echo $html; ?><?php endif; ?></dd>
+        <dd class="ppp <?php echo $_code ?>"<?php if ($hide) {
+            echo $hideStyle;
+        } ?>><?php if ($html = $this->getPaymentMethodFormHtml($_method)): ?><?php echo $html; ?><?php endif; ?></dd>
     <?php endforeach;
 endif;
 ?>

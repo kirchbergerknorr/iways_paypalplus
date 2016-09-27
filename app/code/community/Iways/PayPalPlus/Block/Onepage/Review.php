@@ -27,20 +27,5 @@
  */
 class Iways_PayPalPlus_Block_Onepage_Review extends Mage_Checkout_Block_Onepage_Review
 {
-    /**
-     * Default PayPal Plus OnePage Review template for firecheckout
-     */
-    const FIRECHECKOUT_TEMPLATE = 'paypalplus/firecheckout/checkout/review.phtml';
 
-    /**
-     * Override template file
-     * @return string
-     */
-    public function getTemplate()
-    {
-        if (Mage::getStoreConfig('payment/iways_paypalplus_payment/active') && Mage::helper('core')->isModuleEnabled('TM_FireCheckout') && Mage::getStoreConfig('firecheckout/general/enabled')) {
-            return self::FIRECHECKOUT_TEMPLATE;
-        }
-        return parent::getTemplate();
-    }
 }

@@ -47,8 +47,18 @@ class Iways_PayPalPlus_Helper_Data extends Mage_Payment_Helper_Data
      */
     public function getWebhooksUrl()
     {
-        return str_replace('http://', 'https://',
-            Mage::getUrl('paypalplus/index/webhooks', array('_forced_secure' => true)));
+        return str_replace(
+            'http://',
+            'https://',
+            Mage::getUrl(
+                'paypalplus/index/webhooks',
+                array(
+                    '_forced_secure' => true,
+                    '_nosid' => true,
+                    '_store' => Mage::app()->getDefaultStoreView()->getCode()
+                )
+            )
+        );
     }
 
 
@@ -81,13 +91,13 @@ class Iways_PayPalPlus_Helper_Data extends Mage_Payment_Helper_Data
      */
     public function getDefaultCountryId()
     {
-        if($this->isFirecheckout()) {
+        if ($this->isFirecheckout()) {
             return Mage::getStoreConfig('firecheckout/general/country');
         }
-        if($this->isMagestoreOsc()) {
+        if ($this->isMagestoreOsc()) {
             return Mage::getStoreConfig('onestepcheckout/general/country_id');
         }
-        if($this->isIdevOsc()) {
+        if ($this->isIdevOsc()) {
             return Mage::getStoreConfig('onestepcheckout/general/default_country');
         }
         return Mage::getStoreConfig('payment/account/merchant_country');
@@ -98,11 +108,16 @@ class Iways_PayPalPlus_Helper_Data extends Mage_Payment_Helper_Data
      *
      * @param $key
      * @param $value
+     * @return boolean
      */
     public function saveStoreConfig($key, $value)
     {
-        Mage::getModel('core/config')->saveConfig($key,
-            $value, 'stores', Mage::app()->getStore()->getId());
+        Mage::getModel('core/config')->saveConfig(
+            $key,
+            $value,
+            'stores',
+            Mage::app()->getStore()->getId()
+        );
         Mage::app()->getCacheInstance()->cleanType('config');
         return true;
     }
@@ -127,7 +142,10 @@ class Iways_PayPalPlus_Helper_Data extends Mage_Payment_Helper_Data
      */
     public function isIdevOsc()
     {
-        return Mage::helper('core')->isModuleEnabled('Idev_OneStepCheckout') && Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links');
+        return (
+            Mage::helper('core')->isModuleEnabled('Idev_OneStepCheckout')
+            && Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links')
+        );
     }
 
     /**
@@ -137,16 +155,72 @@ class Iways_PayPalPlus_Helper_Data extends Mage_Payment_Helper_Data
      */
     public function isFirecheckout()
     {
-        return Mage::helper('core')->isModuleEnabled('TM_FireCheckout') && Mage::getStoreConfig('firecheckout/general/enabled');
+        return (
+            Mage::helper('core')->isModuleEnabled('TM_FireCheckout')
+            && Mage::getStoreConfig('firecheckout/general/enabled')
+        );
     }
 
     /**
      * Checks if Magestore_Onestepcheckout is enabled and active
      *
-     * return bool
+     * @return bool
      */
     public function isMagestoreOsc()
     {
-        return Mage::helper('core')->isModuleEnabled('Magestore_Onestepcheckout') && Mage::getStoreConfig('onestepcheckout/general/active');
+        return (
+            Mage::helper('core')->isModuleEnabled('Magestore_Onestepcheckout')
+            && Mage::getStoreConfig('onestepcheckout/general/active')
+        );
+    }
+
+    /**
+     * Checks if Awesome is enabled and active
+     *
+     * @return bool
+     */
+    public function isAwesomeCheckout()
+    {
+        return (
+            Mage::helper('core')->isModuleEnabled('AnattaDesign_AwesomeCheckout')
+        );
+    }
+
+    /**
+     * Checks if Amasty_Scheckout is enabled and active
+     *
+     * @return bool
+     */
+    public function isAmastyScheckout()
+    {
+        return (
+            Mage::helper('core')->isModuleEnabled('Amasty_Scheckout')
+        );
+    }
+
+    /**
+     * Checks if Iwd_Onestepcheckout is enabled and active
+     *
+     * @return bool
+     */
+    public function isIwdOsc()
+    {
+        return (
+            Mage::helper('core')->isModuleEnabled('IWD_Opc')
+            && Mage::getStoreConfig('opc/global/status')
+        );
+    }
+
+    /**
+     * Convert due date
+     *
+     * @param $date
+     * @return string
+     */
+    public function convertDueDate($date)
+    {
+        $dateArray = explode('-', $date);
+        $dateArray = array_reverse($dateArray);
+        return implode('.', $dateArray);
     }
 }
