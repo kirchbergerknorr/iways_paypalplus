@@ -1,3 +1,68 @@
-<?php if($this->isPPP()) : ?>
-    <div class="ppp-success"><?php echo $this->__('<i>processed by PayPal</i>');?></div>
+<?php if ($this->hasPaymentInstruction()) : ?>
+    <div class="ppp-pui">
+        <?php if ($this->isPUI()) : ?>
+            <p><?php echo Mage::helper('iways_paypalplus')->__(
+                    'Please transfer the invoice amount to the given account within the payment deadline.'
+                ); ?></p>
+        <?php endif; ?>
+        <table>
+            <tbody>
+            <tr>
+                <td class="ppp-pui-label">
+                    <?php echo Mage::helper('iways_paypalplus')->__('Account holder:'); ?>
+                </td>
+                <td class="ppp-pui-value">
+                    <?php echo $this->getAdditionalInformation('ppp_pui_account_holder_name'); ?>
+                </td>
+            </tr>
+            <tr>
+                <td class="ppp-pui-label">
+                    <?php echo Mage::helper('iways_paypalplus')->__('Bank:'); ?>
+                </td>
+                <td class="ppp-pui-value">
+                    <?php echo $this->getAdditionalInformation('ppp_pui_bank_name'); ?>
+                </td>
+            </tr>
+            <tr>
+                <td class="ppp-pui-label">
+                    <?php echo Mage::helper('iways_paypalplus')->__('IBAN:'); ?>
+                </td>
+                <td class="ppp-pui-value">
+                    <?php echo $this->getAdditionalInformation('ppp_pui_international_bank_account_number'); ?>
+                </td>
+            </tr>
+            <tr>
+                <td class="ppp-pui-label">
+                    <?php echo Mage::helper('iways_paypalplus')->__('BIC:'); ?>
+                </td>
+                <td class="ppp-pui-value">
+                    <?php echo $this->getAdditionalInformation('ppp_pui_bank_identifier_code'); ?>
+                </td>
+            </tr>
+            <tr>
+                <td class="ppp-pui-label">
+                    <?php echo Mage::helper('iways_paypalplus')->__('Reference number:'); ?>
+                </td>
+                <td class="ppp-pui-value">
+                    <?php echo $this->getAdditionalInformation('ppp_pui_reference_number'); ?>
+                </td>
+            </tr>
+            <?php if ($this->isPUI()) : ?>
+                <tr>
+                    <td class="ppp-pui-label">
+                        <?php echo Mage::helper('iways_paypalplus')->__('Payment due date:'); ?>
+                    </td>
+                    <td class="ppp-pui-value">
+                        <?php echo $this->getAdditionalInformation('ppp_pui_payment_due_date'); ?>
+                    </td>
+                </tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+        <p><?php /* @noEscape */ echo $this->__(
+                '%s has assigned the claim against you on basis of a factoring agreement to PayPal (Europe) S.à r.l. et Cie, S.C.A. You will only be released from your debt by paying to PayPal (Europe) S.à r.l. et Cie, S.C.A.', $this->getStoreName()
+            ); ?></p>
+    </div>
+<?php elseif ($this->isPPP()): ?>
+    <div class="ppp-success"><?php echo $this->__('<i>processed by PayPal</i>'); ?></div>
 <?php endif; ?>

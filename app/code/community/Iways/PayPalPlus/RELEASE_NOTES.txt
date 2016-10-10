@@ -1,3 +1,60 @@
+==== 1.8.0 ====
+Added payment method title changeable.
+Added better Webhook backend exception.
+Added support for Amasty Checkout
+Added support for Awesome Checkout
+Added support for Aheadworks Checkout
+Added support for IDev_OPC 4.5 Checkout
+Fixed TM_Firecheckout missing shipping costs on shipping method reset button.
+Fixed TM_Firecheckout Ordercomment.
+Removed Address from createPayment
+
+==== 1.7.4 ====
+Patch Payment before redirect for standard Magento-Checkout (Possible Patch of missing shipping costs)
+
+==== 1.7.3 ====
+Added PUI legal text
+
+==== 1.7.2 ====
+Changed Handling of Partner ID
+
+==== 1.7.1 ====
+Added discount for IWD
+
+==== 1.7.0 ====
+Update PayPal Rest SDK to 1.6.4
+Fixed parent transaction id
+Fixed wrong PayPal payment id in Idev_OSC
+Added partial refund
+Show payment instructions for manual banktransfer payments on order success page
+Added totals to patchPayment
+Possible MagentoConnect File->directory fix
+
+==== 1.6.2 ====
+Enable/disable loading indicator for PayPal Plus iframe
+Fixed order status if PayPal payment is still pending (Now payment_review until Webhooks approves payment)
+
+==== 1.6.1 ====
+Fixed suspected fraud for different currency
+Changed payment method title for germany in frontend
+
+==== 1.6.0 ====
+Added support for IWD_OSC
+Fixed problem with store code in url
+Changed first recieved transaction id from PayPal to transaction id from payment id
+
+==== 1.5.2 ====
+Fixed state/status of authorizations and gateway-confirmation
+Added last transaction number to order information
+Added transfer order's id as invoice number setting
+
+==== 1.5.1 ====
+Fixed paymentmethod choice for Idev_OSC
+Updated PayPal SDK to 1.6
+
+==== 1.5.0 ====
+Added support for Payment upon Invoice
+
 ==== 1.4.5 ====
 Added information block to checkout/success
 

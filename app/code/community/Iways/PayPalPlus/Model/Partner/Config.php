@@ -19,31 +19,23 @@
  */
 
 /**
- * Iways PayPalPlus Magestore Onestepcheckout
+ * Iways PayPal Model Partner Config
  *
  * @category   Iways
  * @package    Iways_PayPalPlus
  * @author robert
  */
-class Iways_PayPalPlus_Block_Magestore_Onestepcheckout extends Magestore_Onestepcheckout_Block_Onestepcheckout
+class Iways_PayPalPlus_Model_Partner_Config
 {
-    /**
-     * Original template path
-     */
-    const ORIGINAL_TEMPLATE = 'onestepcheckout/onestepcheckout.phtml';
+    const PARTNER_ID = 'Magento_Cart_PayPalPlus';
+
 
     /**
-     * Override template path
-     */
-    const OVERRIDE_TEMPLATE = 'paypalplus/magestore/onestepcheckout.phtml';
-
-    /**
-     * Force overridden template for onestepcheckout but only for special template file
+     * Return Partner ID
      *
      * @return string
      */
-    public function getTemplate()
-    {
-        return parent::getTemplate() == self::ORIGINAL_TEMPLATE ? self::OVERRIDE_TEMPLATE : parent::getTemplate();
+    public function getPartnerId() {
+        return static::PARTNER_ID;
     }
 }

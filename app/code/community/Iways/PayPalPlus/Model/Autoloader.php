@@ -27,7 +27,7 @@
  */
 class Iways_PayPalPlus_Model_Autoloader
 {
-    protected static $registered = false;
+    protected static $_registered = false;
 
     /**
      * Add autoloader
@@ -37,12 +37,12 @@ class Iways_PayPalPlus_Model_Autoloader
      */
     public function addAutoloader(Varien_Event_Observer $observer)
     {
-        if (self::$registered) {
-            return;
+        if (self::$_registered) {
+            return $this;
         }
         spl_autoload_register(array($this, 'autoload'), false, true);
 
-        self::$registered = true;
+        self::$_registered = true;
         return $this;
     }
 

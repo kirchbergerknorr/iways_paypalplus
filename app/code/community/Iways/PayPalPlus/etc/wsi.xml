@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:typens="urn:{{var wsdl.name}}"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+             xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+             name="{{var wsdl.name}}"
+             targetNamespace="urn:{{var wsdl.name}}">
+    <wsdl:types>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:{{var wsdl.name}}">
+            <xsd:complexType name="salesOrderPaymentEntity">
+                <xsd:sequence>
+                    <xsd:element name="ppp_pui_reference_number" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="ppp_pui_instruction_type" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="ppp_pui_note" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="ppp_pui_bank_name" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="ppp_pui_account_holder_name" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="ppp_pui_international_bank_account_number" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="ppp_pui_bank_identifier_code" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="ppp_pui_routing_number" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="ppp_pui_amount" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="ppp_pui_currency" type="xsd:string" minOccurs="0" />
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </wsdl:types>
+</wsdl:definitions>

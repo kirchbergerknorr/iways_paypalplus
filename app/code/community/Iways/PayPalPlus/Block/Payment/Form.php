@@ -25,7 +25,7 @@
  * @package    Iways_PayPalPlus
  * @author robert
  */
-class Iways_PayPalPlus_Block_Form_Payment extends Mage_Payment_Block_Form
+class Iways_PayPalPlus_Block_Payment_Form extends Mage_Payment_Block_Form
 {
     /**
      * PayPalPlus Payment method code
@@ -36,7 +36,8 @@ class Iways_PayPalPlus_Block_Form_Payment extends Mage_Payment_Block_Form
      * Templates for third party methods
      */
     const THIRDPARTY_TEMPLATE = 'thirdPartyPaymentMethods: [%s],';
-    const THIRDPARTY_METHOD_TEMPLATE = '{"redirectUrl":"%s", "methodName": "%s", "imageUrl": "%s", "description": "%s"}';
+    const THIRDPARTY_METHOD_TEMPLATE =
+        '{"redirectUrl":"%s", "methodName": "%s", "imageUrl": "%s", "description": "%s"}';
 
     /**
      * Byte marks to check payment method availability.
@@ -80,14 +81,19 @@ class Iways_PayPalPlus_Block_Form_Payment extends Mage_Payment_Block_Form
             $renderMethods = array();
             foreach ($activePamentMethods as $activePaymentMethod) {
                 if (in_array($activePaymentMethod->getCode(), $thirdPartyMethods)) {
-                    $renderMethods[] = sprintf(self::THIRDPARTY_METHOD_TEMPLATE,
+                    $renderMethods[] = sprintf(
+                        self::THIRDPARTY_METHOD_TEMPLATE,
                         $this->getCheckoutUrl() . $activePaymentMethod->getCode(),
-                        $activePaymentMethod->getTitle(), '',
-                        Mage::getStoreConfig('payment/third_party_modul_info/text_' . $activePaymentMethod->getCode()));
+                        $activePaymentMethod->getTitle(),
+                        '',
+                        Mage::getStoreConfig('payment/third_party_modul_info/text_' . $activePaymentMethod->getCode())
+                    );
                 }
             }
-            return sprintf(self::THIRDPARTY_TEMPLATE,
-                implode(', ', $renderMethods));
+            return sprintf(
+                self::THIRDPARTY_TEMPLATE,
+                implode(', ', $renderMethods)
+            );
         }
         return '';
     }
@@ -104,9 +110,9 @@ class Iways_PayPalPlus_Block_Form_Payment extends Mage_Payment_Block_Form
         $methods = $this->getMethods();
         $methodsArray = array();
         foreach ($methods as $method) {
-            $methodsArray[] = '"' . $method->getTitle() . '":"' . $method->getCode() . '"';
+            $methodsArray[$method->getTitle()] = $method->getCode();
         }
-        return implode(',', $methodsArray);
+        return json_encode($methodsArray);
     }
 
     /**
@@ -119,18 +125,17 @@ class Iways_PayPalPlus_Block_Form_Payment extends Mage_Payment_Block_Form
     public function getThirdPartyMethodJsonObject()
     {
         $thirdPartyMethods = Mage::getStoreConfig('payment/iways_paypalplus_payment/third_party_moduls');
+        $renderMethods = array();
         if (!empty($thirdPartyMethods)) {
             $thirdPartyMethods = explode(',', $thirdPartyMethods);
-            $activePamentMethods = $this->getMethods();
-            $renderMethods = array();
-            foreach ($activePamentMethods as $activePaymentMethod) {
+            $activePaymentMethods = $this->getMethods();
+            foreach ($activePaymentMethods as $activePaymentMethod) {
                 if (in_array($activePaymentMethod->getCode(), $thirdPartyMethods)) {
-                    $renderMethods[] = '"' . $activePaymentMethod->getCode() . '":"' . $activePaymentMethod->getTitle() . '"';
+                    $renderMethods[$activePaymentMethod->getCode()] = $activePaymentMethod->getTitle();
                 }
             }
-            return implode(', ', $renderMethods);
         }
-        return '';
+        return json_encode($renderMethods);
     }
 
     /**
@@ -141,7 +146,8 @@ class Iways_PayPalPlus_Block_Form_Payment extends Mage_Payment_Block_Form
      */
     protected function _canUseNewMethod($method)
     {
-        return $method->isApplicableToQuote($this->getQuote(),
+        return $method->isApplicableToQuote(
+            $this->getQuote(),
             self::CHECK_USE_FOR_COUNTRY | self::CHECK_USE_FOR_CURRENCY | self::CHECK_ORDER_TOTAL_MIN_MAX
         );
     }
@@ -183,9 +189,8 @@ class Iways_PayPalPlus_Block_Form_Payment extends Mage_Payment_Block_Form
             if ($method->getCode() == self::IWAYS_PAYPALPLUS_PAYMENT) {
                 continue;
             }
-            if ($this->_canUseNewMethod($method) && $method->isApplicableToQuote(
-                    $quote, Mage_Payment_Model_Method_Abstract::CHECK_ZERO_TOTAL
-                )
+            if ($this->_canUseNewMethod($method)
+                && $method->isApplicableToQuote($quote, Mage_Payment_Model_Method_Abstract::CHECK_ZERO_TOTAL)
             ) {
                 $methods[] = $method;
             }
@@ -207,11 +212,9 @@ class Iways_PayPalPlus_Block_Form_Payment extends Mage_Payment_Block_Form
         $methods = Mage::helper('payment')->getStoreMethods($store, $quote);
         $total = $quote->getBaseSubtotal() + $quote->getShippingAddress()->getBaseShippingAmount();
         foreach ($methods as $key => $method) {
-            if ($this->_canUseOldMethod($method) && ($total != 0 || $method->getCode()
+            if (!$this->_canUseOldMethod($method) && !($total != 0 || $method->getCode()
                     == 'free' || ($quote->hasRecurringItems() && $method->canManageRecurringProfiles()))
             ) {
-
-            } else {
                 unset($methods[$key]);
             }
         }
@@ -269,9 +272,9 @@ class Iways_PayPalPlus_Block_Form_Payment extends Mage_Payment_Block_Form
     public function getCountryId()
     {
         $billingAddress = Mage::getSingleton('checkout/session')->getQuote()->getBillingAddress();
-        if($billingAddress) {
+        if ($billingAddress) {
             $countryId = $billingAddress->getCountryId();
-        }else {
+        } else {
             $countryId = Mage::helper('iways_paypalplus')->getDefaultCountryId();
         }
         return $countryId;
@@ -296,4 +299,33 @@ class Iways_PayPalPlus_Block_Form_Payment extends Mage_Payment_Block_Form
     {
         return Mage::helper('checkout/url')->getCheckoutUrl();
     }
+
+    /**
+     * Checks if pui should be forced in sandbox mode
+     *
+     * @return mixed
+     */
+    public function isPuiSandboxMode()
+    {
+        return Mage::getStoreConfig('iways_paypalplus/dev/pui_sandbox');
+    }
+
+    /**
+     * Should show loading indicator?
+     * @return mixed
+     */
+    public function  showLoadingIndicator()
+    {
+        return Mage::getStoreConfig('payment/iways_paypalplus_payment/show_loading_indicator');
+    }
+
+    /**
+     * Get current PayPal payment id
+     *
+     * @return mixed
+     */
+    public function getPayPalPaymentId() {
+        return Mage::getSingleton('customer/session')->getPayPalPaymentId();
+    }
+
 }

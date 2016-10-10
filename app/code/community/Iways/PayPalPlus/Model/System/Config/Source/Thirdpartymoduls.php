@@ -66,13 +66,14 @@ class Iways_PayPalPlus_Model_System_Config_Source_Thirdpartymoduls
         $methods = array();
 
         foreach ($payments as $paymentCode => $paymentModel) {
-            if ($paymentCode == 'iways_paypalplus_payment') {
+            if ($paymentCode == Iways_PayPalPlus_Model_Payment::METHOD_CODE) {
                 continue;
             }
+            $paymentTitle = Mage::getStoreConfig('payment/' . $paymentCode . '/title');
+
             if (empty($paymentTitle)) {
                 $paymentTitle = $paymentCode;
             }
-            $paymentTitle = Mage::getStoreConfig('payment/' . $paymentCode . '/title');
             $methods[$paymentCode] = $paymentTitle;
         }
         return $methods;

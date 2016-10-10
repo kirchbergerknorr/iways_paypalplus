@@ -28,28 +28,54 @@
 class Iways_PayPalPlus_Block_Onepage_Payment_Methods extends Mage_Checkout_Block_Onepage_Payment_Methods
 {
     /**
-     * Default PayPal Plus method template
+     * Builds third party methods array
+     *
+     * @return array
      */
-    const DEFAULT_TEMPLATE = 'paypalplus/methods.phtml';
-    /**
-     * Magestore PayPal Plus method template
-     */
-    const MAGESTORE_TEMPLATE = 'paypalplus/magestore/onestepcheckout/payment_method.phtml';
+    public function getThirdPartyMethods()
+    {
+        $thirdPartyMethods = Mage::getStoreConfig('payment/iways_paypalplus_payment/third_party_moduls');
+
+        if (!empty($thirdPartyMethods)) {
+            $thirdPartyMethods = explode(',', $thirdPartyMethods);
+        } else {
+            $thirdPartyMethods = array();
+        }
+        $thirdPartyMethods = array_merge(
+            $thirdPartyMethods,
+            array(
+                'paypaluk_direct',
+                'paypaluk_express',
+                'paypal_standard',
+                'paypal_direct',
+                'paypal_express_bml',
+                'paypal_express'
+            )
+        );
+        $thirdPartyPayPalMethods = array();
+        foreach ($thirdPartyMethods as $thirdPartyMethod) {
+            $thirdPartyPayPalMethods[$thirdPartyMethod] = true;
+        }
+        return $thirdPartyPayPalMethods;
+    }
+
 
     /**
-     * Override template file for different checkouts
-     * @return string
+     * Checks if iways_paypalplus_payment is active and a payment experience could be retrieved from PayPal
+     *
+     * @return bool
      */
-    public function getTemplate()
+    public function isPPPActive()
     {
-        if (Mage::getStoreConfig('payment/iways_paypalplus_payment/active')) {
-            if (Mage::helper('iways_paypalplus')->isFirecheckout()) {
-                return self::DEFAULT_TEMPLATE;
-            }
-            if (Mage::helper('iways_paypalplus')->isMagestoreOsc()) {
-                return self::MAGESTORE_TEMPLATE;
+        $paymentExperience = Mage::helper('iways_paypalplus')->getPaymentExperience();
+
+        if ($paymentExperience) {
+            foreach ($this->getMethods() as $_method) {
+                if ($_method->getCode() == Iways_PayPalPlus_Model_Payment::METHOD_CODE) {
+                    return true;
+                }
             }
         }
-        return parent::getTemplate();
+        return false;
     }
 }

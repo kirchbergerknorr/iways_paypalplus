@@ -71,13 +71,28 @@ class Iways_PayPalPlus_IndexController extends Mage_Checkout_Controller_Action
             if ($diff) {
                 $result['success'] = false;
                 $result['error'] = true;
-                $result['error_messages'] = $this->__('Please agree to all the terms and conditions before placing the order.');
+                $result['error_messages'] =
+                    $this->__('Please agree to all the terms and conditions before placing the order.');
+
                 $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($result));
                 return;
             }
         }
-        $result['success'] = true;
-        $result['error'] = false;
+        try {
+            $responsePayPal = Mage::getModel('iways_paypalplus/api')->patchPayment($this->getOnepage()->getQuote());
+            if ($responsePayPal) {
+                $result['success'] = true;
+            } else {
+                $result['success'] = false;
+                $result['error'] = false;
+                $result['error_messages'] = $this->__('Please select an other payment method.');
+
+            }
+        } catch (\Exception $e) {
+            $result['success'] = false;
+            $result['error'] = false;
+            $result['error_messages'] = $e->getMessage();
+        }
         $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($result));
     }
 
@@ -111,39 +126,29 @@ class Iways_PayPalPlus_IndexController extends Mage_Checkout_Controller_Action
                 $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($response));
                 return;
             }
-            if (Mage::helper('iways_paypalplus')->isIdevOsc()) {
-                /* Save Idev_Onestepcheckout POST Data to Quote */
-                $this->getLayout()->createBlock('Iways_PayPalPlus_Block_Idev_Checkout',
-                    'iways_paypalplus_handle_post_block');
-            } else {
-                if (Mage::helper('iways_paypalplus')->isFirecheckout()) {
-                    $this->getQuote()->setFirecheckoutCustomerComment($this->getRequest()->getPost('order-comment'));
-                    $quote = $this->getQuote();
-                    foreach (Mage::helper('checkoutfields')->getEnabledFields() as $fieldName => $fieldConfig) {
-                        $value = (string)$this->getRequest()->getPost($fieldName);
-                        $quote->setData($fieldName, $value);
-                    }
-                }
-
-                $billing = $this->getRequest()->getPost('billing', array());
-                $customerBillingAddressId = $this->getRequest()->getPost('billing_address_id', false);
-
-                if (isset($billing['email'])) {
-                    $billing['email'] = trim($billing['email']);
-                }
-                $this->getOnepage()->saveBilling($billing, $customerBillingAddressId);
-
-                $shipping = $this->getRequest()->getPost('shipping', array());
-                if ($billing['use_for_shipping']) {
-                    $shipping = $billing;
-                }
-                $customerShippingAddressId = $this->getRequest()->getPost('shipping_address_id', false);
-                $this->getOnepage()->saveShipping($shipping, $customerShippingAddressId);
-
-                $this->getOnepage()->saveShippingMethod($this->getRequest()->getPost('shipping_method', ''));
-
-                $this->getOnepage()->savePayment($this->getRequest()->getPost('payment', array()));
+            if ($this->getRequest()->getParam('pppId')) {
+                Mage::getSingleton('customer/session')->setPayPalPaymentId($this->getRequest()->getParam('pppId'));
             }
+            $billing = $this->getRequest()->getPost('billing', array());
+            $customerBillingAddressId = $this->getRequest()->getPost('billing_address_id', false);
+
+
+            if (isset($billing['email'])) {
+                $billing['email'] = trim($billing['email']);
+            }
+            $this->getOnepage()->saveBilling($billing, $customerBillingAddressId);
+
+            $shipping = $this->getRequest()->getPost('shipping', array());
+            if ($billing['use_for_shipping']) {
+                $shipping = $billing;
+            }
+            $customerShippingAddressId = $this->getRequest()->getPost('shipping_address_id', false);
+            $this->getOnepage()->saveShipping($shipping, $customerShippingAddressId);
+
+            $this->getOnepage()->saveShippingMethod($this->getRequest()->getPost('shipping_method', ''));
+
+            $this->getOnepage()->savePayment($this->getRequest()->getPost('payment', array()));
+
             $responsePayPal = Mage::getModel('iways_paypalplus/api')->patchPayment($this->getOnepage()->getQuote());
             if ($responsePayPal) {
                 $response = array('status' => 'success');
@@ -156,6 +161,7 @@ class Iways_PayPalPlus_IndexController extends Mage_Checkout_Controller_Action
         } catch (Exception $ex) {
             $response = array('status' => 'error', 'message' => $ex->getMessage());
         }
+
         $this->getResponse()->setHeader('Content-type', 'application/json');
         $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($response));
     }
@@ -169,17 +175,16 @@ class Iways_PayPalPlus_IndexController extends Mage_Checkout_Controller_Action
             return;
         }
         try {
-            sleep(20);
             /** @var \PayPal\Api\WebhookEvent $webhookEvent */
-            $webhookEvent = Mage::getSingleton('iways_paypalplus/api')->validateWebhook($this->getRequest()->getRawBody());
+            $webhookEvent =
+                Mage::getSingleton('iways_paypalplus/api')->validateWebhook($this->getRequest()->getRawBody());
+            if (!$webhookEvent) {
+                Mage::throwException('Event not found.');
+            }
             Mage::getModel('iways_paypalplus/webhook_event')->processWebhookRequest($webhookEvent);
-        } catch (PayPal\Exception\PayPalConnectionException $ex) {
-            Mage::logException($ex);
-            $this->getResponse()->setHeader('HTTP/1.1', '503 Service Unavailable')->sendResponse();
-            exit;
         } catch (Exception $e) {
             Mage::logException($e);
-            $this->getResponse()->setHttpResponseCode(500);
+            $this->getResponse()->setHeader('HTTP/1.1', '503 Service Unavailable')->sendResponse();
         }
     }
 }

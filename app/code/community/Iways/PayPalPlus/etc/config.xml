@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Iways_PayPalPlus>
-            <version>1.4.5</version>
+            <version>1.8.0</version>
         </Iways_PayPalPlus>
     </modules>
     <global>
@@ -10,6 +10,11 @@
             <iways_paypalplus>
                 <class>Iways_PayPalPlus_Model</class>
             </iways_paypalplus>
+            <sales>
+                <rewrite>
+                    <api2_order>Iways_PayPalPlus_Model_Api2_Order</api2_order>
+                </rewrite>
+            </sales>
         </models>
         <helpers>
             <iways_paypalplus>
@@ -23,14 +28,8 @@
             <checkout>
                 <rewrite>
                     <onepage_payment_methods>Iways_PayPalPlus_Block_Onepage_Payment_Methods</onepage_payment_methods>
-                    <onepage_review>Iways_PayPalPlus_Block_Onepage_Review</onepage_review>
                 </rewrite>
             </checkout>
-            <onestepcheckout>
-                <rewrite>
-                    <onestepcheckout>Iways_PayPalPlus_Block_Magestore_Onestepcheckout</onestepcheckout>
-                </rewrite>
-            </onestepcheckout>
         </blocks>
         <events>
             <controller_front_init_before>
@@ -42,6 +41,25 @@
                 </observers>
             </controller_front_init_before>
         </events>
+        <resources>
+            <iways_paypalplus_setup>
+                <setup>
+                    <module>Iways_PayPalPlus</module>
+                    <class>Mage_Sales_Model_Entity_Setup</class>
+                </setup>
+            </iways_paypalplus_setup>
+        </resources>
+        <sales>
+            <order>
+                <states>
+                    <payment_review>
+                        <statuses>
+                            <pending_paypal />
+                        </statuses>
+                    </payment_review>
+                </states>
+            </order>
+        </sales>
     </global>
     <frontend>
         <layout>
@@ -104,6 +122,14 @@
                     </reset_web_profile>
                 </observers>
             </admin_system_config_changed_section_general>
+            <admin_system_config_changed_section_web>
+                <observers>
+                    <reset_web_profile>
+                        <class>iways_paypalplus/observer</class>
+                        <method>checkWebhook</method>
+                    </reset_web_profile>
+                </observers>
+            </admin_system_config_changed_section_web>
         </events>
         <translate>
             <modules>
@@ -122,7 +148,7 @@
                             <children>
                                 <config>
                                     <children>
-                                        <iways_paypalplus>
+                                        <iways_paypalplus translate="title" module="iways_paypalplus">
                                             <title>Iways PayPalPlus Modul Section</title>
                                         </iways_paypalplus>
                                     </children>
@@ -145,6 +171,7 @@
         <payment>
             <iways_paypalplus_payment>
                 <active>0</active>
+                <transfer_reserved_order_id>0</transfer_reserved_order_id>
                 <sort_order>-1</sort_order>
                 <model>iways_paypalplus/payment</model>
                 <order_status>processing</order_status>

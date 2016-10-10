@@ -26,20 +26,27 @@ if ($paymentExperience) :
             var payment = {};
         }
         function selectMethod(code) {
+            try {
+                if(typeof awOSCPayment != "undefined") {
+                    awOSCPayment.currentMethod = code;
+                }
+            } catch (e) {
+
+            }
             document.getElementById('p_method_' + code).click();
         }
         window.externMethodEnabled = false;
         window.startPPP = function () {
             if(typeof window.thirdPartyObject == 'undefined') {
-                window.thirdPartyObject = {<?php echo $this->getThirdPartyJsonObject(); ?>};
-                window.thirdPartyMethodObject = {<?php echo $this->getThirdPartyMethodJsonObject(); ?>};
+                window.thirdPartyObject = <?php echo $this->getThirdPartyJsonObject(); ?>;
+                window.thirdPartyMethodObject = <?php echo $this->getThirdPartyMethodJsonObject(); ?>;
             }
             document.cookie = 'paypalplus_session=; Path=/checkout/onepage; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
             document.cookie = 'paypalplus_session=; Path=/checkout; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
             document.cookie = 'paypalplus_session=; Path=/firecheckout; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
             document.cookie = 'paypalplus_session=; Path=/onestepcheckout; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-
-            selectMethod('iways_paypalplus_payment');
+            window.pppId = '<?php echo $this->getPayPalPaymentId(); ?>';
+            selectMethod('<?php echo Iways_PayPalPlus_Model_Payment::METHOD_CODE; ?>');
             window.ppp = PAYPAL.apps.PPP(
                 {
                     approvalUrl: "<?php echo $paymentExperience; ?>",
@@ -47,6 +54,12 @@ if ($paymentExperience) :
                     mode: "<?php echo Mage::getStoreConfig('iways_paypalplus/api/mode'); ?>",
                     useraction:"commit",
                     buttonLocation:"outside",
+                    <?php if($this->isPuiSandboxMode()) : ?>
+                    showPuiOnSandbox: true,
+                    <?php endif; ?>
+                    <?php if($this->showLoadingIndicator()) : ?>
+                    showLoadingIndicator: true,
+                    <?php endif; ?>
                     country:"<?php echo $this->getCountryId(); ?>",
                     language:"<?php echo $this->getLanguage(); ?>",
                     onContinue: function () {
@@ -58,7 +71,7 @@ if ($paymentExperience) :
                     },
                     enableContinue: function (data) {
                         if(this.lastCall != 'onThirdPartyPaymentMethodSelected') {
-                            selectMethod('iways_paypalplus_payment');
+                            selectMethod('<?php echo Iways_PayPalPlus_Model_Payment::METHOD_CODE; ?>');
                         }
                         this.lastCall = 'enableContinue';
                         try {
@@ -73,6 +86,12 @@ if ($paymentExperience) :
                             }
                             if($('onestepcheckout-button-place-order') != null) {
                                 $('onestepcheckout-button-place-order').enable();
+                            }
+                            if($$('#checkout-review-submit > button.opc-btn-checkout').length > 0) {
+                                $$('#checkout-review-submit > button.opc-btn-checkout')[0].enable();
+                            }
+                            if($$('#aw-onestepcheckout-place-order-button').length > 0) {
+                                $$('#aw-onestepcheckout-place-order-button')[0].enable();
                             }
                         }catch (e) {
                             console.log(e);
@@ -92,6 +111,12 @@ if ($paymentExperience) :
                                 }
                                 if($('onestepcheckout-button-place-order') != null) {
                                     $('onestepcheckout-button-place-order').disable();
+                                }
+                                if($$('#checkout-review-submit > button.opc-btn-checkout').length > 0) {
+                                    $$('#checkout-review-submit > button.opc-btn-checkout')[0].disable();
+                                }
+                                if($$('#aw-onestepcheckout-place-order-button').length > 0) {
+                                    $$('#aw-onestepcheckout-place-order-button')[0].disable();
                                 }
                             }catch (e) {
                                 console.log(e);

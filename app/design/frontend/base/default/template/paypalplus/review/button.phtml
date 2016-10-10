@@ -24,54 +24,59 @@
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
-<button type="submit" id="place-order-button" title="<?php echo $this->__('Place Order') ?>" class="button btn-checkout" onclick="return false;"><span><span><?php echo $this->__('Place Order') ?></span></span></button>
+<button type="submit" id="place-order-button" title="<?php echo $this->__('Place Order') ?>"
+        class="button btn-checkout"
+        onclick="return false;">
+    <span>
+        <span><?php echo $this->__('Place Order') ?></span>
+    </span>
+</button>
 <script type="text/javascript">
-    $('place-order-button').observe('click', function() {
-        if(payment.currentMethod == 'iways_paypalplus_payment') {
+    $('place-order-button').observe('click', function () {
+        if (payment.currentMethod == '<?php echo Iways_PayPalPlus_Model_Payment::METHOD_CODE; ?>') {
+            if (checkout.loadWaiting != false) return;
+            checkout.setLoadWaiting('review');
             if($('checkout-agreements') != null) {
-                if (checkout.loadWaiting!=false) return;
-                checkout.setLoadWaiting('review');
                 params = Form.serialize($('checkout-agreements'));
                 params.validate = true;
-                var request = new Ajax.Request(
-                    '<?php echo Mage::helper('iways_paypalplus')->getUrl('paypalplus/index/validate'); ?>',
-                    {
-                        method:'post',
-                        parameters:params,
-                        onSuccess: function(transport) {
-                            try{
-                                response = eval('(' + transport.responseText + ')');
-                            }
-                            catch (e) {
-                                response = {};
-                            }
-                            if (response.redirect) {
-                                review.isSuccess = true;
-                                window.ppp.doCheckout();
-                                return;
-                            }
-                            if (response.success) {
-                                review.isSuccess = true;
-                                window.ppp.doCheckout();
-                            }
-                            else{
-                                var msg = response.error_messages;
-                                if (typeof(msg)=='object') {
-                                    msg = msg.join("\n");
-                                }
-                                if (msg) {
-                                    alert(msg);
-                                }
-                                review.resetLoadWaiting(transport);
-                            }
-                        },
-                        onFailure: checkout.ajaxFailure.bind(checkout)
-                    }
-                );
-            }else {
-                review.isSuccess = true;
-                window.ppp.doCheckout();
+            } else {
+                params = "";
             }
+            var request = new Ajax.Request(
+                '<?php echo Mage::helper('iways_paypalplus')->getUrl('paypalplus/index/validate'); ?>',
+                {
+                    method: 'post',
+                    parameters: params,
+                    onSuccess: function (transport) {
+                        try {
+                            response = eval('(' + transport.responseText + ')');
+                        }
+                        catch (e) {
+                            response = {};
+                        }
+                        if (response.redirect) {
+                            review.isSuccess = true;
+                            window.ppp.doCheckout();
+                            return;
+                        }
+                        if (response.success) {
+                            review.isSuccess = true;
+                            window.ppp.doCheckout();
+                        }
+                        else {
+                            var msg = response.error_messages;
+                            if (typeof(msg) == 'object') {
+                                msg = msg.join("\n");
+                            }
+                            if (msg) {
+                                alert(msg);
+                            }
+                            review.resetLoadWaiting(transport);
+                        }
+                    },
+                    onFailure: checkout.ajaxFailure.bind(checkout)
+                }
+            );
         } else {
             review.save();
         }

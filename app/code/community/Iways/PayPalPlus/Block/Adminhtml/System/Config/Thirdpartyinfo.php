@@ -25,8 +25,8 @@
  * @package    Iways_PayPalPlus
  * @author robert
  */
-class Iways_PayPalPlus_Block_Adminhtml_System_Config_Fieldset_Payment_Thirdparty_Info extends
-    Mage_Paypal_Block_Adminhtml_System_Config_Fieldset_Expanded
+class Iways_PayPalPlus_Block_Adminhtml_System_Config_Thirdpartyinfo
+    extends Mage_Paypal_Block_Adminhtml_System_Config_Fieldset_Expanded
 {
     /**
      * @var
@@ -55,8 +55,6 @@ class Iways_PayPalPlus_Block_Adminhtml_System_Config_Fieldset_Payment_Thirdparty
         $thirdPartyMethods = explode(',', $thirdPartyMethods);
 
         $payments = Mage::getSingleton('payment/config')->getActiveMethods();
-
-        $methods = array(array('value' => '', 'label' => Mage::helper('adminhtml')->__('--Please Select--')));
 
         foreach ($payments as $paymentCode => $paymentModel) {
             if (in_array($paymentCode, $thirdPartyMethods)) {
@@ -124,7 +122,9 @@ class Iways_PayPalPlus_Block_Adminhtml_System_Config_Fieldset_Payment_Thirdparty
 
         $e = $this->_getDummyElement();
 
-        $field = $fieldset->addField($paymentModel->getCode(), 'text',
+        $field = $fieldset->addField(
+            $paymentModel->getCode(),
+            'text',
             array(
                 'name' => 'groups[third_party_modul_info][fields][text_' . $paymentModel->getCode() . '][value]',
                 'label' => $paymentModel->getTitle(),
@@ -132,7 +132,8 @@ class Iways_PayPalPlus_Block_Adminhtml_System_Config_Fieldset_Payment_Thirdparty
                 'inherit' => $inherit,
                 'can_use_default_value' => $this->getForm()->canUseDefaultValue($e),
                 'can_use_website_value' => $this->getForm()->canUseWebsiteValue($e),
-            ))->setRenderer($this->_getFieldRenderer());
+            )
+        )->setRenderer($this->_getFieldRenderer());
 
         return $field->toHtml();
     }

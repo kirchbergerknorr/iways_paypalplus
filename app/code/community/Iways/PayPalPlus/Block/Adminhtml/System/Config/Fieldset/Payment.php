@@ -25,7 +25,8 @@
  * @package    Iways_PayPalPlus
  * @author robert
  */
-class Iways_PayPalPlus_Block_Adminhtml_System_Config_Fieldset_Payment extends Mage_Paypal_Block_Adminhtml_System_Config_Fieldset_Payment
+class Iways_PayPalPlus_Block_Adminhtml_System_Config_Fieldset_Payment
+    extends Mage_Paypal_Block_Adminhtml_System_Config_Fieldset_Payment
 {
     /**
      * Get collapsed state on-load
