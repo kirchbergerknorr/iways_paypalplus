@@ -19,7 +19,9 @@
     <checkout_onepage_index>
         <reference  name="head">
             <block type="core/text" name="ppplus" ifconfig="payment/iways_paypalplus_payment/active">
-                   <action method="setText"><text><![CDATA[<script src="//www.paypalobjects.com/webstatic/ppplus/ppplus.min.js" type="text/javascript"></script>]]></text></action>
+                   <action method="setText">
+                       <text><![CDATA[<script src="//www.paypalobjects.com/webstatic/ppplus/ppplus.min.js" type="text/javascript"></script>]]></text>
+                   </action>
             </block>
             <action method="addCss" ifconfig="payment/iways_paypalplus_payment/active">
                 <stylesheet>css/iways-paypalplus.css</stylesheet>

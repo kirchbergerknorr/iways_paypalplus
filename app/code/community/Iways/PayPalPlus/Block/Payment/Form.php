@@ -163,7 +163,10 @@ class Iways_PayPalPlus_Block_Payment_Form extends Mage_Payment_Block_Form
     {
         $methods = $this->getData('methods');
         if ($methods === null) {
-            if (version_compare(Mage::getVersion(), '1.8.0', '>=')) {
+            if (
+                (Mage::getEdition() == MAGE::EDITION_COMMUNITY && version_compare(Mage::getVersion(), '1.8.0', '>='))
+                || (Mage::getEdition() == MAGE::EDITION_ENTERPRISE &&  version_compare(Mage::getVersion(), '1.13.0', '>='))
+            ){
                 $methods = $this->getNewMethods();
             } else {
                 $methods = $this->getOldMethods();

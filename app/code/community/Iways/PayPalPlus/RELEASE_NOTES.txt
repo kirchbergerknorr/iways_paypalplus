@@ -1,3 +1,26 @@
+==== 1.9.2 ====
+Removed all console.log
+
+==== 1.9.1 ====
+Fixed JS Error with Firecheckout
+
+==== 1.9.0 ====
+Added compatibility with Magento EE 1.12, 1.13, 1.14
+Added token cache to reduce API-Calls
+
+==== 1.8.4 ====
+Added hidden shipping tax to transaction taxes. Thanks to idowapro.
+
+==== 1.8.3 ====
+Added support for PAYMENT.SALE.DENIED webhook event
+
+==== 1.8.2 ====
+Fixed patch of empty shipping address for virtual orders
+Removed some unnecessary console.log
+
+==== 1.8.1 ====
+Fixed autoloader. Thanks to avstudnitz.
+
 ==== 1.8.0 ====
 Added payment method title changeable.
 Added better Webhook backend exception.

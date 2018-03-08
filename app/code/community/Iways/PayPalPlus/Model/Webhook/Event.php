@@ -42,6 +42,10 @@ class Iways_PayPalPlus_Model_Webhook_Event
      */
     const PAYMENT_SALE_REFUNDED = 'PAYMENT.SALE.REFUNDED';
     /**
+     * Payment sale denied event type
+     */
+    const PAYMENT_SALE_DENIED = 'PAYMENT.SALE.DENIED';
+    /**
      * Payment sale reversed event type code
      */
     const PAYMENT_SALE_REVERSED = 'PAYMENT.SALE.REVERSED';
@@ -49,6 +53,7 @@ class Iways_PayPalPlus_Model_Webhook_Event
      * Risk dispute created event type code
      */
     const RISK_DISPUTE_CREATED = 'RISK.DISPUTE.CREATED';
+
 
     /**
      * Store order instance
@@ -84,7 +89,8 @@ class Iways_PayPalPlus_Model_Webhook_Event
             self::PAYMENT_SALE_PENDING,
             self::PAYMENT_SALE_REFUNDED,
             self::PAYMENT_SALE_REVERSED,
-            self::RISK_DISPUTE_CREATED
+            self::RISK_DISPUTE_CREATED,
+            self::PAYMENT_SALE_DENIED
         );
     }
 
@@ -195,6 +201,18 @@ class Iways_PayPalPlus_Model_Webhook_Event
             ->setTransactionId($paymentResource->id)
             ->setIsTransactionClosed(0)
             ->registerPaymentReviewAction(Mage_Sales_Model_Order_Payment::REVIEW_ACTION_UPDATE, false);
+        $this->_order->save();
+    }
+
+    /**
+     * Mark payment as denied and cancel order
+     *
+     * @param \PayPal\Api\WebhookEvent $webhookEvent
+     */
+    protected function paymentSaleDenied(\PayPal\Api\WebhookEvent $webhookEvent)
+    {
+        $this->_order->getPayment()->deny();
+        $this->_order->cancel();
         $this->_order->save();
     }
 

@@ -54,8 +54,8 @@ class Iways_PayPalPlus_Model_Autoloader
     public function autoload($class)
     {
         $classFile = str_replace('\\', DS, $class) . '.php';
-        // Only include a namespaced class.  This should leave the regular Magento autoloader alone
-        if (strpos($classFile, DS) !== false) {
+        // Actually check if file exists in include path, do nothing otherwise
+        if (stream_resolve_include_path($classFile) !== false) {
             include $classFile;
         }
     }

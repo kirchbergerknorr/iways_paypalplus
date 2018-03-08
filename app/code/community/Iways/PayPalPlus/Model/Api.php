@@ -93,6 +93,7 @@ class Iways_PayPalPlus_Model_Api
             array(
                 'http.ConnectionTimeOut' => 30,
                 'http.Retry' => 1,
+                'cache.enabled' => Mage::getStoreConfig('iways_paypalplus/dev/token_cache'),
                 'mode' => $this->_mode,
                 'log.LogEnabled' => Mage::getStoreConfig('dev/log/active', $website),
                 'log.FileName' => Mage::getBaseDir('log') . DS . 'PayPal.log',
@@ -112,6 +113,9 @@ class Iways_PayPalPlus_Model_Api
      */
     public function getPaymentExperience()
     {
+        if(!(float) $this->getQuote()->getBaseGrandTotal()) {
+            return false;
+        }
         $paymentExperience = Mage::registry('payment_experience');
         if ($paymentExperience === null) {
             $webProfile = $this->buildWebProfile();
@@ -197,12 +201,14 @@ class Iways_PayPalPlus_Model_Api
             $payment = Payment::get(Mage::getSingleton('customer/session')->getPayPalPaymentId(), $this->_apiContext);
             $patchRequest = new PatchRequest();
 
-            $shippingAddress = $this->buildShippingAddress($quote);
-            $addressPatch = new Patch();
-            $addressPatch->setOp(self::PATCH_ADD);
-            $addressPatch->setPath('/transactions/0/item_list/shipping_address');
-            $addressPatch->setValue($shippingAddress);
-            $patchRequest->addPatch($addressPatch);
+            if(!$quote->isVirtual()) {
+                $shippingAddress = $this->buildShippingAddress($quote);
+                $addressPatch = new Patch();
+                $addressPatch->setOp(self::PATCH_ADD);
+                $addressPatch->setPath('/transactions/0/item_list/shipping_address');
+                $addressPatch->setValue($shippingAddress);
+                $patchRequest->addPatch($addressPatch);
+            }
 
             $payerInfo = $this->buildBillingAddress($quote);
             $payerInfoPatch = new Patch();
@@ -597,6 +603,9 @@ class Iways_PayPalPlus_Model_Api
         $totals = $quote->getTotals();
         if (isset($totals['discount']) && $totals['discount']->getValue()) {
             $details->setShippingDiscount(-$totals['discount']->getValue());
+        }
+        if($quote->getBaseGiftCardsAmountUsed()) {
+            $details->setShippingDiscount(-$quote->getBaseGiftCardsAmountUsed() - $details->getShippingDiscount());
         }
         $amount = new Amount();
         $amount->setCurrency($quote->getBaseCurrencyCode())
