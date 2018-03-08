@@ -81,6 +81,7 @@ $pppActive = $this->isPPPActive();
 $hideStyle = ' style="display:none;"';
 $hideClass = ' ppp-hide'
 ?>
+<dl class="sp-methods">
 <?php if (empty($methods) && !$pppActive): ?>
     <dt>
         <?php echo $this->__('No Payment Methods') ?>
@@ -126,6 +127,7 @@ $hideClass = ' ppp-hide'
     <?php endforeach;
 endif;
 ?>
+</dl>
 <?php echo $this->getChildChildHtml('additional'); ?>
 <script type="text/javascript">
     //<![CDATA[

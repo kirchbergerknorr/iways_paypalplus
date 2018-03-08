@@ -1,0 +1,142 @@
+<?php
+/**
+ * aheadWorks Co.
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the EULA
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://ecommerce.aheadworks.com/AW-LICENSE.txt
+ *
+ * =================================================================
+ *                 MAGENTO EDITION USAGE NOTICE
+ * =================================================================
+ * This software is designed to work with Magento community edition and
+ * its use on an edition other than specified is prohibited. aheadWorks does not
+ * provide extension support in case of incorrect edition use.
+ * =================================================================
+ *
+ * @category   AW
+ * @package    AW_Onestepcheckout
+ * @version    1.3.8
+ * @copyright  Copyright (c) 2010-2012 aheadWorks Co. (http://www.aheadworks.com)
+ * @license    http://ecommerce.aheadworks.com/AW-LICENSE.txt
+ */
+?>
+<script type="text/javascript">
+        delete window.ppp;
+        function handlePPP(method) {
+            if (
+                window.ppp != null && method != '<?php echo Iways_PayPalPlus_Model_Payment::METHOD_CODE; ?>'
+                && typeof window.thirdPartyMethodObject[method] == 'undefined'
+            ) {
+                window.externMethodEnabled = true;
+                window.ppp.deselectPaymentMethod();
+            } else {
+                window.externMethodEnabled = false;
+            }
+            try {
+                $$('.ppp').each(function (element) {
+                    element.removeClassName('ppp-selected')
+                });
+                $$('.ppp.' + method).each(function (element) {
+                    element.addClassName('ppp-selected')
+                });
+            } catch (e) {
+
+            }
+            try {
+                if ($$('#payment-buttons-container > button').length > 0) {
+                    $$('#payment-buttons-container > button')[0].enable();
+                }
+                if ($('onestepcheckout-place-order') != null) {
+                    $('onestepcheckout-place-order').enable();
+                }
+                if ($$('#review-buttons-container > button').length > 0) {
+                    $$('#review-buttons-container > button')[0].enable();
+                }
+            } catch (e) {
+
+            }
+        }
+
+</script>
+<?php $blockNumber = $this->getBlockNumber();?>
+<?php $blockNumberClass = (!is_null($blockNumber))?"aw-onestepcheckout-number-{$blockNumber}":"";?>
+<?php
+$methods = $this->getMethods();
+$oneMethod = count($methods) <= 1;
+
+$thirdPartyMethods = $this->getThirdPartyMethods();
+$pppActive = $this->isPPPActive();
+
+$hideStyle = ' style="display:none;"';
+?>
+<p class="aw-onestepcheckout-number <?php echo $blockNumberClass;?>"><?php echo $this->__('PAYMENT METHOD'); ?></p>
+<div id="aw-onestepcheckout-payment-method" class="aw-onestepcheckout-add-loader-into-this-block">
+    <dl class="sp-methods" id="checkout-payment-method-load">
+        <?php $oneMethod = count($methods) <= 1; ?>
+        <?php foreach ($methods as $_method): ?>
+            <?php $_code = $_method->getCode();
+            if (isset($thirdPartyMethods[$_code]) && $pppActive) {
+                $hide = true;
+            } else {
+                $hide = false;
+            }
+            ?>
+            <dt class="ppp <?php echo $_code ?>"<?php if ($hide || $_code == Iways_PayPalPlus_Model_Payment::METHOD_CODE) {
+                echo $hideStyle;
+            } ?>>
+                <?php if(!$oneMethod): ?>
+                    <input id="p_method_<?php echo $_code ?>" value="<?php echo $_code ?>" type="radio" name="payment[method]" title="<?php echo $this->htmlEscape($_method->getTitle()) ?>"<?php if($this->getSelectedMethodCode()==$_code): ?> checked="checked"<?php endif; ?> onclick="handlePPP('<?php echo $_code ?>');" class="radio" />
+                <?php else: ?>
+                    <span class="no-display"><input id="p_method_<?php echo $_code ?>" value="<?php echo $_code ?>" type="radio" name="payment[method]" checked="checked" class="radio" /></span>
+                    <?php $oneMethod = $_code; ?>
+                <?php endif; ?>
+                <label for="p_method_<?php echo $_code ?>"><?php echo $this->escapeHtml($this->getMethodTitle($_method)) ?> <?php echo $this->getMethodLabelAfterHtml($_method) ?></label>
+            </dt>
+            <?php if ($html = $this->getPaymentMethodFormHtml($_method)): ?>
+                <dd class="ppp <?php echo $_code ?>"<?php if ($hide) {
+                    echo $hideStyle;
+                } ?>>
+                    <?php echo $html; ?>
+                </dd>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    </dl>
+    <div class="validation-advice" style="display: none;"></div>
+    <?php echo $this->getChildChildHtml('additional'); ?>
+    <div class="tool-tip" id="payment-tool-tip" style="display:none;">
+        <div class="btn-close"><a href="#" id="payment-tool-tip-close" title="<?php echo $this->__('Close') ?>"><?php echo $this->__('Close') ?></a></div>
+        <div class="tool-tip-content"><img src="<?php echo $this->getSkinUrl('images/cvv.gif') ?>" alt="<?php echo $this->__('Card Verification Number Visual Reference') ?>" title="<?php echo $this->__('Card Verification Number Visual Reference') ?>" /></div>
+    </div>
+    <script type="text/javascript">
+        var awOSCPayment = new AWOnestepcheckoutPayment({
+            containerSelector: "#aw-onestepcheckout-payment-method",
+            wrapContainerSelector: "#aw-onestepcheckout-payment-method-wrapper",
+            switchMethodInputsSelector: "input[name='payment[method]']",
+            methodAdditionalContainerIdPrefix: "payment_form_",
+            cvv: {
+                tooltipSelector: "#payment-tool-tip",
+                closeElSelector: "#payment-tool-tip-close",
+                triggerElsSelector: ".cvv-what-is-this"
+            },
+            savePaymentUrl: <?php echo Zend_Json::encode($this->getSavePaymentUrl());?>,
+            paymentChangeTriggerEwayElementsIds: [
+                'ewayrapid_saved_token',
+                'ewayrapid_saved_cc_owner',
+                'ewayrapid_saved_cc_number',
+                'ewayrapid_saved_expiration',
+                'ewayrapid_saved_expiration_yr',
+                'ewayrapid_saved_cc_cid',
+                'ewayrapid_notsaved_cc_owner',
+                'ewayrapid_notsaved_cc_number',
+                'ewayrapid_notsaved_expiration',
+                'ewayrapid_notsaved_expiration_yr',
+                'ewayrapid_notsaved_cc_cid',
+            ]
+        });
+    </script>
+    <?php echo $this->getChildHtml('extra');?>
+</div>

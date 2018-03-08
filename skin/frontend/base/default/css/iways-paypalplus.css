@@ -1,3 +1,7 @@
+#checkout-payment-method-load .ppp-hide {
+    display:none !important;
+}
+
 #checkout-payment-method-load dt.ppp {
     background-color: #fff;
     margin: 0;

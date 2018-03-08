@@ -1,0 +1,120 @@
+<script type="text/javascript">
+    IWD.OPC.initSaveOrder = function(){
+        $j_opc(document).off('click');
+        $j_opc(document).on('click', '.opc-btn-checkout', function(){
+
+            if (IWD.OPC.Checkout.disabledSave==true)
+                return;
+
+            // check agreements
+            var mis_aggree = false;
+            $j_opc('#checkout-agreements input[name*="agreement"]').each(function(){
+                if(!$j_opc(this).is(':checked')){
+                    mis_aggree = true;
+                }
+            });
+
+            if(mis_aggree){
+                $j_opc('.opc-message-container').html($j_opc('#agree_error').html());
+                $j_opc('.opc-message-wrapper').show();
+                IWD.OPC.Checkout.hideLoader();
+                IWD.OPC.Checkout.unlockPlaceOrder();
+                IWD.OPC.saveOrderStatus = false;
+                return false;
+            }
+            ///
+
+            var addressForm = new VarienForm('opc-address-form-billing');
+            if (!addressForm.validator.validate()){
+                return;
+            }
+
+            if (!$j_opc('input[name="billing[use_for_shipping]"]').prop('checked')){
+                var addressForm = new VarienForm('opc-address-form-shipping');
+                if (!addressForm.validator.validate()){
+                    return;
+                }
+            }
+
+            // check if LIPP enabled
+            if(typeof(IWD.LIPP) != 'undefined' && IWD.LIPP != undefined && IWD.LIPP != '' && IWD.LIPP)
+            {
+                if(IWD.LIPP.lipp_enabled){
+                    var method = payment.currentMethod;
+                    if(typeof(method) != 'undefined' && method != undefined && method != '' && method){
+                        if (method.indexOf('paypaluk_express')!=-1 || method.indexOf('paypal_express')!=-1){
+                            if (IWD.OPC.Checkout.config.comment!=="0")
+                                IWD.OPC.saveCustomerComment();
+                            //IWD.LIPP.redirectPayment();
+                            if (payment.currentMethod=='paypal_express'){
+                                var urlConnect = PayPalLightboxConfig.setExpressCheckout
+                            }
+
+                            if (payment.currentMethod=='paypaluk_express'){
+                                var urlConnect = PayPalLightboxConfig.setExpressCheckoutUk;
+                            }
+
+                            paypal.checkout.initXO();
+                            $ji.support.cors = true;
+                            $ji.ajax({
+                                url: urlConnect,
+                                type: "GET",
+                                async: true,
+                                crossDomain: false,
+
+                                success: function (token) {
+
+                                    if (token.indexOf('cart') != -1  || token.indexOf('login')!= -1){
+                                        paypal.checkout.closeFlow();
+                                        setLocation(token);
+                                    }else{
+                                        var url = paypal.checkout.urlPrefix + token;
+                                        paypal.checkout.startFlow(url);
+                                    }
+
+                                },
+                                error: function (responseData, textStatus, errorThrown) {
+                                    alert("Error in ajax post"+responseData.statusText);
+                                    //Gracefully Close the minibrowser in case of AJAX errors
+                                    paypal.checkout.closeFlow();
+                                }
+                            });
+                            return;
+                        }
+                    }
+                }
+            }
+            ////
+            if(payment.currentMethod == 'iways_paypalplus_payment') {
+                IWD.OPC.saveOrderStatus = true;
+                IWD.OPC.Checkout.lockPlaceOrder();
+                if (IWD.OPC.Checkout.config.comment!=="0") {
+                    IWD.OPC.saveCustomerComment();
+                }
+                $ji.ajax({
+                    url: '<?php echo Mage::helper('iways_paypalplus')->getUrl('paypalplus/index/patch'); ?>'+'pppId/'+window.pppId,
+                    type: "POST",
+                    crossDomain: false,
+                    parameters: $ji('opc-address-form-billing, opc-address-form-shipping').serialize(),
+                    success: function (token) {
+                        window.ppp.doCheckout();
+                    },
+                    error: function (responseData, textStatus, errorThrown) {
+                        alert("Error in ajax post");
+                    }
+                });
+                return;
+            }
+
+            IWD.OPC.saveOrderStatus = true;
+            IWD.OPC.Plugin.dispatch('saveOrderBefore');
+            if (IWD.OPC.Checkout.isVirtual===false){
+                IWD.OPC.Checkout.lockPlaceOrder();
+                IWD.OPC.Shipping.saveShippingMethod();
+            }else{
+                IWD.OPC.validatePayment();
+            }
+        });
+
+    }
+</script>

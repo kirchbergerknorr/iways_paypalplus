@@ -36,7 +36,7 @@ $installer->getConnection()
     ->addColumn($installer->getTable('sales/order_payment'), 'ppp_pui_instruction_type', array(
         'type'      => Varien_Db_Ddl_Table::TYPE_TEXT,
         'length'    => 255,
-        'comment' => 'PayPal Plus PuI Insctruction Type',
+        'comment' => 'PayPal Plus PuI Instruction Type',
     ));
 $installer->getConnection()
     ->addColumn($installer->getTable('sales/order_payment'), 'ppp_pui_payment_due_date', array(
